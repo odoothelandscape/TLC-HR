@@ -6,18 +6,16 @@ class BiometricService {
 
   Future<bool> authenticate() async {
     try {
-      bool canCheckBiometrics = await auth.canCheckBiometrics;
-
       bool isSupported = await auth.isDeviceSupported();
 
-      if (!canCheckBiometrics || !isSupported) {
+      if (!isSupported) {
         return false;
       }
 
       bool authenticated = await auth.authenticate(
-        localizedReason: 'Please authenticate to check in/out',
+        localizedReason: 'يرجى التحقق من هويتك لتسجيل الحضور أو الانصراف',
         options: const AuthenticationOptions(
-          biometricOnly: true,
+          biometricOnly: false,
           stickyAuth: true,
         ),
       );

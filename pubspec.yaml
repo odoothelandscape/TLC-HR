@@ -40,9 +40,8 @@ dependencies:
   material_design_icons_flutter: ^5.0.6595
   flutter_svg: ^1.0.3
   flutter_speed_dial: ^5.0.0
-  google_maps_flutter: ^2.1.1
-  geocoding: ^2.0.5
-  geolocator: ^8.2.0
+  # google_maps_flutter: ^2.1.1  # removed - not needed, no map UI used
+  # geocoding: ^2.0.5             # removed - depends on Google Maps
   # qr_code_scanner:
   # flutter_barcode_scanner:
   # barcode_scan2: ^4.2.3
@@ -63,7 +62,6 @@ dependencies:
   # phone_caller: ^0.0.1
   encrypt: ^5.0.1
   flutter_easyloading: ^3.0.0
-  location: ^4.3.0
   http: ^0.13.4
   connectivity_plus: ^2.0.2
   easy_localization: ^3.0.0
@@ -75,6 +73,7 @@ dependencies:
   onesignal_flutter:
   firebase_database:
   firebase_core:
+  firebase_messaging: ^14.0.0
   cloud_firestore:
   # firebase_core: ^1.10.6
   internet_connection_checker: ^0.0.1+4
@@ -88,6 +87,7 @@ dependencies:
   path: ^1.8.0
   path_provider: ^2.0.0
   local_auth: ^2.1.0
+  geolocator: ^11.1.0
   # tflite_flutter: ^0.9.0
   # tflite_flutter_helper: ^0.3.0
   # flutter_face_api: ^6.4.875

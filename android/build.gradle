@@ -1,14 +1,14 @@
 buildscript {
-    //ext.kotlin_version = '1.7.10'
-    ext.kotlin_version = '1.8.21'    
+    ext.kotlin_version = '1.8.21'
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.0'
+        classpath 'com.android.tools.build:gradle:7.3.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.google.gms:google-services:4.4.2'
     }
 }
 
@@ -23,8 +23,17 @@ rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
+
 subprojects {
     project.evaluationDependsOn(':app')
+    
+    // ---> THIS IS THE OVERRIDE HACK FOR THE LOCATION PLUGIN <---
+    project.buildscript {
+        ext.kotlin_version = '1.8.21'
+        dependencies {
+            classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.21"
+        }
+    }
 }
 
 task clean(type: Delete) {

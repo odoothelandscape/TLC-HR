@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Track App</string>
+	<string>TLC HR</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,13 +13,13 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>talent_hr</string>
+	<string>TLC HR</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>NSFaceIDUsageDescription</key>
-    <string>This app uses Face ID / fingerprint for check in and check out</string>
+	<string>This app uses Face ID / fingerprint for check in and check out</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
@@ -49,5 +49,26 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Photo Library -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to your photo library to upload and share images.</string>
+
+	<!-- Camera -->
+	<key>NSCameraUsageDescription</key>
+	<string>This app uses the camera to capture photos for your profile or documents.</string>
+
+	<!-- Location (When In Use) -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app uses your location to provide location-based services.</string>
+
+	<!-- Location (Always & When In Use) -->
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app may use your location to support background location features.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>This app uses your local network to connect to nearby services and improve connectivity.</string>
+	<key>NSBonjourServices</key>
+	<array/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>

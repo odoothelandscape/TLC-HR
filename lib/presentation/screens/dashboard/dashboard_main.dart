@@ -42,6 +42,7 @@ import '../../widgets/widgets.dart';
 import '../attendance/attendance_screen.dart';
 import '../employee/employee_detail.dart';
 import '../leave/leave_history_list_screen.dart';
+import '../discuss/discuss_screen.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -1718,9 +1719,45 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: _buildAttendanceItem('assets/imgs/2.png', 'Overtime',
                     overtimeCount.toString(), Colors.orange[100]!, 38, 38),
               ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const DiscussScreen()));
+                },
+                child: _buildDiscussItem(),
+              ),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDiscussItem() {
+    return Card(
+      color: Colors.blue[50],
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: ColorObj.mainColor.withOpacity(0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.chat_bubble_outline,
+                  color: ColorObj.mainColor, size: 24),
+            ),
+            const SizedBox(height: 4),
+            const Text('Discuss', style: TextStyle(fontSize: 12)),
+            const Text('Chat', style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
       ),
     );
   }
