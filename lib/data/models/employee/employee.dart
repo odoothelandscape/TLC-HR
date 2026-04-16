@@ -27,6 +27,7 @@ class Employee {
   String? write_date;
   String? latitude;
   String? longitude;
+  String? mobile_work_mode;
 
   Employee(
       this.employee_id,
@@ -52,7 +53,7 @@ class Employee {
       this.write_date,
       this.latitude,
       this.longitude,
-      {this.id});
+      {this.id, this.mobile_work_mode});
 
   factory Employee.fromJson(Map<String, dynamic> json) =>
       _$EmployeeFromJson(json);

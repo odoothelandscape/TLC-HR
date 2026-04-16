@@ -96,13 +96,14 @@ class _WaitingScreenState extends State<WaitingScreen> {
     checkDeviceActivation();
     setState(() {});
 
-    Employee employee = await employeeDao.getSingleEmployeeById(userId!);
+    Employee? employee = await employeeDao.getSingleEmployeeById(userId!);
     toast!.showToast(
       child: Widgets().getDownloadToast('Employee data downloaded'),
       gravity: ToastGravity.BOTTOM,
       toastDuration: Duration(seconds: 1),
     );
 
+    if (employee == null) return;
     await attendanceApi.getAttendanceList(employee.employee_id!);
     toast!.showToast(
       child: Widgets().getDownloadToast('Attendance data downloaded'),

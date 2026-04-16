@@ -26,6 +26,7 @@ class Attendance {
   String? att_type;
   String? checkInSelfie;
   String? checkOutSelfie;
+  String? work_mode;
 
   Attendance(
       this.attendanceId,
@@ -50,7 +51,7 @@ class Attendance {
       this.att_type,
       this.checkInSelfie,
       this.checkOutSelfie,
-      {this.id});
+      {this.id, this.work_mode});
 
   factory Attendance.fromJson(Map<String, dynamic> json) =>
       _$AttendanceFromJson(json);

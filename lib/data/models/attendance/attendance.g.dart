@@ -30,6 +30,7 @@ Attendance _$AttendanceFromJson(Map<String, dynamic> json) => Attendance(
       json['checkInSelfie'] as String?,
       json['checkOutSelfie'] as String?,
       id: json['id'] as int?,
+      work_mode: json['work_mode'] as String?,
     );
 
 Map<String, dynamic> _$AttendanceToJson(Attendance instance) =>
@@ -57,4 +58,5 @@ Map<String, dynamic> _$AttendanceToJson(Attendance instance) =>
       'att_type': instance.att_type,
       'checkInSelfie': instance.checkInSelfie,
       'checkOutSelfie': instance.checkOutSelfie,
+      'work_mode': instance.work_mode,
     };

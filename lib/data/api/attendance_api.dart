@@ -224,6 +224,7 @@ class AttendanceAPI {
       "device_id": attendance.device_id,
       "in_latitude": attendance.in_latitude,
       "in_longitude": attendance.in_longitude,
+      "work_mode": attendance.work_mode ?? 'office',
     };
     var response = await http
         .post(url,
@@ -290,6 +291,7 @@ class AttendanceAPI {
       'remarks': attendance.reason,
       "out_latitude": attendance.out_latitude,
       "out_longitude": attendance.out_longitude,
+      "work_mode": attendance.work_mode ?? 'office',
     };
  
 

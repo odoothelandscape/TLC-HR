@@ -105,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late Position userPosition;
   String dayName = '';
   bool _isOfficeSelected = true;
-  // bool _remoteSelected = false;
+  String _pendingWorkMode = 'office'; // set by work-mode dialog before check-in
 
   initState() {
     super.initState();
@@ -347,8 +347,21 @@ class _HomeScreenState extends State<HomeScreen> {
     String check_in_datetime =
         DateUtil().getSqlDateTime(_currentDateTime, 'yyyy-MM-dd HH:mm:ss');
 
-    Position userPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+    Position? userPosition;
+    try {
+      userPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+        timeLimit: const Duration(seconds: 15),
+      );
+    } catch (e) {
+      print('_insertCheckIn: getCurrentPosition failed: $e');
+      userPosition = await Geolocator.getLastKnownPosition();
+    }
+    userPosition ??= Position(
+      latitude: 0, longitude: 0, timestamp: DateTime.now(),
+      accuracy: 0, altitude: 0, altitudeAccuracy: 0,
+      heading: 0, headingAccuracy: 0, speed: 0, speedAccuracy: 0,
+    );
 
     Attendance att = Attendance(
         0,
@@ -363,19 +376,17 @@ class _HomeScreenState extends State<HomeScreen> {
         "0",
         userPosition.latitude,
         userPosition.longitude,
-        // userPosition.latitude,z
-        // userPosition.longitude,
         0,
         0,
         address,
         '',
         deviceStatus.androidId,
-        //androidDeviceInfo.androidId,
         '',
         '',
         'default',
         '',
-        '');
+        '',
+        work_mode: _pendingWorkMode);
 
     print('att----$att');
     return att;
@@ -388,8 +399,21 @@ class _HomeScreenState extends State<HomeScreen> {
         await attendanceDao.getTodayAttendanceAlreadyCheckIn(todayDate);
     checkInOutTime = DateFormat('H:m a').format(DateTime.now());
 
-    Position userPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+    Position? userPosition;
+    try {
+      userPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+        timeLimit: const Duration(seconds: 15),
+      );
+    } catch (e) {
+      print('_insertCheckout: getCurrentPosition failed: $e');
+      userPosition = await Geolocator.getLastKnownPosition();
+    }
+    userPosition ??= Position(
+      latitude: 0, longitude: 0, timestamp: DateTime.now(),
+      accuracy: 0, altitude: 0, altitudeAccuracy: 0,
+      heading: 0, headingAccuracy: 0, speed: 0, speedAccuracy: 0,
+    );
 
     if (tempAttendance != null) {
       attendance = tempAttendance;
@@ -420,7 +444,8 @@ class _HomeScreenState extends State<HomeScreen> {
           attendance.att_type,
           '',
           '',
-          id: attendance.id);
+          id: attendance.id,
+          work_mode: _pendingWorkMode);
       print('att----$att');
       return att;
     } else {
@@ -598,62 +623,70 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(height: 24),
                   GestureDetector(
                     onTap: () async {
-                      if (_isOfficeSelected) {
-                        try {
-                          // throw Exception('sm;;mmvms');
-                          employee =
-                              await employeeDao.getSingleEmployeeById(uid!);
+                      try {
+                        employee = await employeeDao.getSingleEmployeeById(uid!);
 
+                        // Step 1: Show work mode dialog based on employee's allowed modes
+                        final allowedMode = employee?.mobile_work_mode ?? 'office_only';
+                        String workMode = 'office';
+
+                        if (allowedMode != 'office_only') {
+                          if (!mounted) return;
+                          final selected = await _showWorkModeDialog(allowedMode);
+                          if (selected == null) return; // user cancelled
+                          workMode = selected;
+                        }
+
+                        _pendingWorkMode = workMode;
+
+                        // Step 2: Location check only for office mode
+                        if (workMode == 'office') {
                           EasyLoading.show();
-
-                          await attendanceApi
-                              .getAttendanceSetting(employee!.employee_id!);
-
+                          await attendanceApi.getAttendanceSetting(employee!.employee_id!);
                           AttendanceChecker checker = AttendanceChecker();
+                          bool hasPermission = await checker.checkAttendancePermission();
+                          EasyLoading.dismiss();
 
-                          bool hasPermission =
-                              await checker.checkAttendancePermission();
-
-                          if (hasPermission) {
-                            EasyLoading.dismiss();
+                          if (!hasPermission) {
                             if (!mounted) return;
-
-                            final BiometricService biometricService =
-                                BiometricService();
-                            bool verified =
-                                await biometricService.authenticate();
-
-                            if (!verified) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text("Authentication failed")),
-                              );
-                              return;
-                            }
-
-                            showConfirmationDialog(context);
-                          } else {
-                            EasyLoading.dismiss();
-                            FToast? toast;
-                            toast = FToast();
-                            toast.init(context);
-                            toast.showToast(
-                              child: Widgets().getErrorToast(
-                                  'You are not in allowed area!'),
+                            FToast ftoast = FToast()..init(context);
+                            ftoast.showToast(
+                              child: Widgets().getErrorToast('You are not in allowed area!'),
                               gravity: ToastGravity.BOTTOM,
-                              toastDuration: Duration(seconds: 1),
+                              toastDuration: const Duration(seconds: 2),
                             );
-
                             return;
                           }
-                        } catch (e, stackTrace) {
-                          EasyLoading.dismiss();
-                          EasyLoading.show(
-                              status: 'Error------${stackTrace.toString()}');
-                          EasyLoading.dismiss();
                         }
-                      } else {
+
+                        // Step 3: Biometric authentication
+                        if (!mounted) return;
+                        final BiometricService biometricService = BiometricService();
+                        bool verified = await biometricService.authenticate();
+
+                        if (!verified) {
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Authentication failed")),
+                          );
+                          return;
+                        }
+
+                        if (!mounted) return;
                         showConfirmationDialog(context);
+
+                      } catch (e, stackTrace) {
+                        EasyLoading.dismiss();
+                        print('Check-in error: $e\n$stackTrace');
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error: ${e.toString()}'),
+                              duration: const Duration(seconds: 4),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
                       }
                     },
                     child: Container(
@@ -830,6 +863,62 @@ class _HomeScreenState extends State<HomeScreen> {
               ));
         });
       },
+    );
+  }
+
+  /// Shows the work mode selector based on what the employee is allowed to use.
+  /// Returns the selected mode ('office', 'remote', 'field') or null if cancelled.
+  Future<String?> _showWorkModeDialog(String allowedMode) async {
+    // Build list of available options based on employee's allowed mode
+    final options = <Map<String, dynamic>>[
+      {'value': 'office', 'label': 'In Office', 'icon': Icons.business, 'color': Colors.green},
+    ];
+    if (allowedMode == 'remote' || allowedMode == 'all') {
+      options.add({'value': 'remote', 'label': 'Remote / WFH', 'icon': Icons.home_work, 'color': Colors.blue});
+    }
+    if (allowedMode == 'field' || allowedMode == 'all') {
+      options.add({'value': 'field', 'label': 'Field Work', 'icon': Icons.directions_car, 'color': Colors.orange});
+    }
+
+    return showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Select Work Mode', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: options.map((opt) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () => Navigator.pop(ctx, opt['value'] as String),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: opt['color'] as Color, width: 1.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(opt['icon'] as IconData, color: opt['color'] as Color),
+                    const SizedBox(width: 12),
+                    Text(opt['label'] as String,
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500,
+                            color: opt['color'] as Color)),
+                  ],
+                ),
+              ),
+            ),
+          )).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, null),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
     );
   }
 

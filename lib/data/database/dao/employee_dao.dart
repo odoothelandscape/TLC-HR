@@ -54,12 +54,16 @@ class EmployeeDao {
     return list;
   }
 
-  Future<Employee> getSingleEmployeeById(int id) async {
+  Future<Employee?> getSingleEmployeeById(int id) async {
     print('getSingleEmployee------ $id'); //To Remove log
     var db = await dbProvider.database;
     List<Map<String, Object?>> result;
     result = await db!.rawQuery("SELECT * FROM employee WHERE user_id = $id");
 
+    if (result.isEmpty) {
+      print('getSingleEmployeeById: no record found for user_id=$id');
+      return null;
+    }
     Employee employee = Employee.fromJson(result.toList()[0]);
     return employee;
   }

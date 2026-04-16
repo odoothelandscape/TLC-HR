@@ -10,7 +10,7 @@ import 'package:encrypt/encrypt.dart' as encrypt;
 
 class DatabaseProvider with ChangeNotifier {
   static Database? _database;
-  final int _dbversion = 1;
+  final int _dbversion = 2;
   static final DatabaseProvider db = DatabaseProvider._();
   DatabaseProvider._();
 
@@ -25,9 +25,27 @@ class DatabaseProvider with ChangeNotifier {
   _initDB() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     final path = join(documentsDirectory.path, 'talent_hr.db');
-    var db =
-        await openDatabase(path, version: _dbversion, onCreate: _createTable);
+    var db = await openDatabase(
+      path,
+      version: _dbversion,
+      onCreate: _createTable,
+      onUpgrade: _onUpgrade,
+    );
     return db;
+  }
+
+  Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // v1 → v2: add work_mode columns
+      try {
+        await db.execute(
+            'ALTER TABLE employee ADD COLUMN mobile_work_mode TEXT');
+      } catch (_) {}
+      try {
+        await db.execute(
+            'ALTER TABLE attendance ADD COLUMN work_mode TEXT');
+      } catch (_) {}
+    }
   }
 
   Future _createTable(Database db, int version) async {
@@ -67,7 +85,8 @@ class DatabaseProvider with ChangeNotifier {
         'approval_level TEXT,'
         'write_date TEXT,'
         'latitude TEXT,'
-        'longitude TEXT)');
+        'longitude TEXT,'
+        'mobile_work_mode TEXT)');
 
     await db.execute('CREATE TABLE holiday('
         'id INTEGER PRIMARY KEY AUTOINCREMENT,'
@@ -123,7 +142,8 @@ class DatabaseProvider with ChangeNotifier {
         'write_date TEXT,'
         'att_type TEXT,'
         'checkInSelfie TEXT,'
-        'checkOutSelfie TEXT)');
+        'checkOutSelfie TEXT,'
+        'work_mode TEXT)');
 
     await db.execute('CREATE TABLE leaveReason('
         'id INTEGER PRIMARY KEY AUTOINCREMENT,'
@@ -318,5 +338,5 @@ class DatabaseProvider with ChangeNotifier {
 
   List<String> tables = [];
   static const SECRET_KEY = "TALENTHR_FLUTTER_PRIVATE_KEY";
-  static const DATABASE_VERSION = 1;
+  static const DATABASE_VERSION = 2;
 }

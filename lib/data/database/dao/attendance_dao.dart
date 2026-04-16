@@ -20,13 +20,17 @@ class AttendanceDao {
     return list;
   }
 
-  Future<Attendance> getSingleAttendanceById(int id) async {
+  Future<Attendance?> getSingleAttendanceById(int id) async {
     print('getSingleAttendance------ $id'); //To Remove log
     var db = await dbProvider.database;
     List<Map<String, Object?>> result;
     result = await db!.rawQuery("SELECT * FROM attendance WHERE id = $id");
 
     print('result ${result.toList()}'); //To Remove log
+    if (result.isEmpty) {
+      print('getSingleAttendanceById: no record found for id=$id');
+      return null;
+    }
     Attendance attendance = Attendance.fromJson(result.toList()[0]);
     return attendance;
   }

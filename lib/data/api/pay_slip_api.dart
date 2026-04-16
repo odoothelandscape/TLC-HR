@@ -24,7 +24,7 @@ class PaySlipAPI {
     database = pref.getString('database');
     uid = pref.getInt('uid');
     var employeeDao = EmployeeDao();
-    Employee employee = await employeeDao.getSingleEmployeeById(uid);
+    Employee? employee = await employeeDao.getSingleEmployeeById(uid);
     var param = {
  
      'state':'paid',
@@ -110,7 +110,7 @@ class PaySlipAPI {
     database = pref.getString('database');
     uid = pref.getInt('uid');
     var employeeDao = EmployeeDao();
-    Employee employee = await employeeDao.getSingleEmployeeById(uid);
+    Employee? employee = await employeeDao.getSingleEmployeeById(uid);
     var param = {
    
       'state':'paid',
@@ -182,7 +182,7 @@ class PaySlipAPI {
     uid = pref.getInt('uid');
     var employeeDao = EmployeeDao();
  
-    Employee employee = await employeeDao.getSingleEmployeeById(uid);
+    Employee? employee = await employeeDao.getSingleEmployeeById(uid);
     var param = {
      
       'state':'paid',

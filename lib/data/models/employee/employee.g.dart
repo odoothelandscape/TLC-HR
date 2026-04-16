@@ -31,6 +31,7 @@ Employee _$EmployeeFromJson(Map<String, dynamic> json) => Employee(
       json['latitude'] as String?,
       json['longitude'] as String?,
       id: json['id'] as int?,
+      mobile_work_mode: json['mobile_work_mode'] as String?,
     );
 
 Map<String, dynamic> _$EmployeeToJson(Employee instance) => <String, dynamic>{
@@ -58,4 +59,5 @@ Map<String, dynamic> _$EmployeeToJson(Employee instance) => <String, dynamic>{
       'write_date': instance.write_date,
       'latitude': instance.latitude,
       'longitude': instance.longitude,
+      'mobile_work_mode': instance.mobile_work_mode,
     };
