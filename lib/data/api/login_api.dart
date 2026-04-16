@@ -16,7 +16,13 @@ class loginAPI {
     List<Map<String, dynamic>> listData = [];
     String loginResult = '';
 
-    var url = Uri.parse('$urlLink' 'api/auth?username=$username&password=$password&device_imei=$deviceImei&device_vals={"device_id":"$deviceId","name": "$deviceName","device_model": "$deviceModel"}');
+    // URL-encode each param so special characters (@ # & + etc.) in passwords don't break the URL
+    final _encodedUsername = Uri.encodeComponent(username);
+    final _encodedPassword = Uri.encodeComponent(password);
+    final _encodedImei = Uri.encodeComponent(deviceImei);
+    final _deviceValsJson = '{"device_id":"$deviceId","name":"$deviceName","device_model":"$deviceModel"}';
+    final _encodedDeviceVals = Uri.encodeComponent(_deviceValsJson);
+    var url = Uri.parse('${urlLink}api/auth?username=$_encodedUsername&password=$_encodedPassword&device_imei=$_encodedImei&device_vals=$_encodedDeviceVals');
     
     try {
       await http.post(

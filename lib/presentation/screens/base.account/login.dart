@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:device_info/device_info.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -44,12 +43,10 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _showLoginForm = false;
   bool? loginned = false;
   var loginApi = loginAPI();
-  late Timer timer;
+  Timer? timer;
   var deviceState = '';
   var _dbList = <Map<String, dynamic>>[];
   var _listDbSuccessful = false;
-  late DeviceInfoPlugin deviceInfoPlugin;
-  late AndroidDeviceInfo androidDeviceInfo;
   var pref;
   StreamSubscription? subscription;
   bool hasConnection = true;
@@ -59,8 +56,8 @@ class _LoginScreenState extends State<LoginScreen> {
   bool showDatabaseDropdown = false;
 
   bool ckeckedUrl = false;
-  var url;
-  var deviceStatus;
+  String url = Config.url;
+  AppDeviceInfo? deviceStatus;
 
   @override
   void initState() {
@@ -91,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
    
     var shareComponent = ShareComponentClass();
     deviceStatus = await shareComponent.readDeviceId();
-    url = Config.url;
+    url = pref.getString('url') ?? Config.url;
     urlController.text = url;
     await pref.setString('url', url);
     var username = await pref.getString('username');
@@ -106,9 +103,10 @@ class _LoginScreenState extends State<LoginScreen> {
   
   }
 
+  @override
   void dispose() {
+    timer?.cancel();
     super.dispose();
-    timer.cancel();
   }
 
  
@@ -124,15 +122,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
     var loginResult;
 
+    if (deviceStatus == null) {
+      toast!.showToast(
+        child: Widgets().getErrorToast('Device information is still loading. Please try again.'),
+        gravity: ToastGravity.BOTTOM,
+        toastDuration: Duration(seconds: 2),
+      );
+      return;
+    }
+
     EasyLoading.show(status: 'signing in...........');
 
     loginResult = await loginApi.login(
       usernameController.text.toString(),
       passwordController.text.toString(),
-      deviceStatus.id,
-      deviceStatus.androidId.toString(),
-      deviceStatus.device,
-      deviceStatus.model,
+      deviceStatus!.id,
+      deviceStatus!.androidId,
+      deviceStatus!.device,
+      deviceStatus!.model,
     );
 
     EasyLoading.dismiss();
@@ -157,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
         pref.setBool(Constant.IS_APPROVED, false);
         pref.setBool(Constant.IS_LOGIN, false);
         timer = Timer(const Duration(milliseconds: 1), () async {
-          timer.cancel();
+          timer?.cancel();
 
           Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) => WaitingScreen()));
@@ -289,6 +296,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: TextFormField(
                           focusNode: _passF,
                           cursorColor: Colors.grey,
+                          autocorrect: false,
+                          enableSuggestions: false,
+                          keyboardType: TextInputType.visiblePassword,
+                          smartDashesType: SmartDashesType.disabled,
+                          smartQuotesType: SmartQuotesType.disabled,
                           validator: (value) {
                             if (value!.isEmpty) {
                               return 'Please enter password';
@@ -331,7 +343,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           // enteredUrl = true;
                           // url = urlController.text.toString();
-                          await pref.setString('url', url);
+                          final loginUrl = url.isNotEmpty
+                              ? url
+                              : (pref.getString('url') ?? Config.url);
+                          await pref.setString('url', loginUrl);
                           //showDatabaseDropdown = true;
 
                           await pref!.setString('database',
