@@ -201,7 +201,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
     uid = await pref.getInt('uid');
 
+    dynamic employeeSyncResult;
     employee = await employeeDao.getSingleEmployeeById(uid!);
+    if (employee == null) {
+      employeeSyncResult = await employeeApi.getEmployeeList();
+      if (employeeSyncResult == 'success') {
+        employee = await employeeDao.getSingleEmployeeById(uid!);
+      }
+    }
+    if (employee == null) {
+      if (!mounted) return;
+      toast!.showToast(
+        child: Widgets().getErrorToast(
+            employeeSyncResult == null
+                ? 'Employee data is missing on this device.'
+                : 'Employee data is missing on this device. Sync result: $employeeSyncResult'),
+        gravity: ToastGravity.BOTTOM,
+        toastDuration: Duration(seconds: 3),
+      );
+      return;
+    }
     // await instructionApi.getInstructionList(employee!.employee_id!);
     // instructionCount = await pref.getInt('instructionCount');
 
@@ -287,6 +306,27 @@ class _HomeScreenState extends State<HomeScreen> {
     timer = Timer.periodic(Duration(seconds: 15), (Timer t) {});
   }
 
+  /// Returns a GPS fix with accuracy ≤ [maxAccuracyMeters].
+  /// Retries up to [maxRetries] times with a 2-second pause so the GPS chip
+  /// can acquire real satellites instead of falling back to WiFi/cell-tower
+  /// estimates (which can be 100-500 m off).
+  Future<Position?> _getAccuratePosition({
+    int maxRetries = 3,
+    double maxAccuracyMeters = 100,
+  }) async {
+    for (int i = 0; i < maxRetries; i++) {
+      try {
+        final pos = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.best,
+          timeLimit: const Duration(seconds: 15),
+        );
+        if (pos.accuracy <= maxAccuracyMeters) return pos;
+      } catch (_) {}
+      if (i < maxRetries - 1) await Future.delayed(const Duration(seconds: 2));
+    }
+    return null;
+  }
+
   _sendAttendance() async {
     bool checkInternet = await InternetConnectionChecker().hasConnection;
 
@@ -347,16 +387,11 @@ class _HomeScreenState extends State<HomeScreen> {
     String check_in_datetime =
         DateUtil().getSqlDateTime(_currentDateTime, 'yyyy-MM-dd HH:mm:ss');
 
-    Position? userPosition;
-    try {
-      userPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.medium,
-        timeLimit: const Duration(seconds: 15),
-      );
-    } catch (e) {
-      print('_insertCheckIn: getCurrentPosition failed: $e');
-      userPosition = await Geolocator.getLastKnownPosition();
-    }
+    // Use _getAccuratePosition() so the GPS chip has time to get a real
+    // satellite fix. LocationAccuracy.medium (WiFi/cell-tower) can be 100-500m
+    // off. getLastKnownPosition() is never used — stale cached coordinates from
+    // a previous session could be from a completely different place.
+    Position? userPosition = await _getAccuratePosition();
     userPosition ??= Position(
       latitude: 0, longitude: 0, timestamp: DateTime.now(),
       accuracy: 0, altitude: 0, altitudeAccuracy: 0,
@@ -399,16 +434,7 @@ class _HomeScreenState extends State<HomeScreen> {
         await attendanceDao.getTodayAttendanceAlreadyCheckIn(todayDate);
     checkInOutTime = DateFormat('H:m a').format(DateTime.now());
 
-    Position? userPosition;
-    try {
-      userPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.medium,
-        timeLimit: const Duration(seconds: 15),
-      );
-    } catch (e) {
-      print('_insertCheckout: getCurrentPosition failed: $e');
-      userPosition = await Geolocator.getLastKnownPosition();
-    }
+    Position? userPosition = await _getAccuratePosition();
     userPosition ??= Position(
       latitude: 0, longitude: 0, timestamp: DateTime.now(),
       accuracy: 0, altitude: 0, altitudeAccuracy: 0,

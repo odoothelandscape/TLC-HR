@@ -41,20 +41,12 @@ class AttendanceChecker {
 
     print('locations-----------${locations.length}');
 
-    // Get user current location — use medium accuracy with timeout for iOS
-    Position? userPosition;
-    try {
-      userPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.medium,
-        timeLimit: const Duration(seconds: 15),
-      );
-    } catch (e) {
-      print('getCurrentPosition failed: $e — trying last known position');
-      userPosition = await Geolocator.getLastKnownPosition();
-    }
+    // Use best accuracy — medium/network-based location can be off by 100-500m.
+    // getLastKnownPosition() is NOT used as fallback: stale cached coordinates
+    // from a previous session could be from a completely different location.
+    Position? userPosition = await _getAccuratePosition();
 
     if (userPosition == null) {
-      print('Could not obtain location');
       return false;
     }
 
@@ -82,6 +74,27 @@ class AttendanceChecker {
     }
 
     return false; // ❌ No matching location
+  }
+
+  /// Returns a GPS position with accuracy ≤ [maxAccuracyMeters].
+  /// Retries up to [maxRetries] times (2-second pause between attempts) so the
+  /// GPS chip has time to get a real satellite fix instead of a network estimate.
+  /// Returns null if no accurate fix is obtained within the retries.
+  Future<Position?> _getAccuratePosition({
+    int maxRetries = 3,
+    double maxAccuracyMeters = 100,
+  }) async {
+    for (int i = 0; i < maxRetries; i++) {
+      try {
+        final pos = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.best,
+          timeLimit: const Duration(seconds: 15),
+        );
+        if (pos.accuracy <= maxAccuracyMeters) return pos;
+      } catch (_) {}
+      if (i < maxRetries - 1) await Future.delayed(const Duration(seconds: 2));
+    }
+    return null;
   }
 
   /// iOS-compatible location permission check using Geolocator's own API
