@@ -306,25 +306,41 @@ class _HomeScreenState extends State<HomeScreen> {
     timer = Timer.periodic(Duration(seconds: 15), (Timer t) {});
   }
 
-  /// Returns a GPS fix with accuracy ≤ [maxAccuracyMeters].
-  /// Retries up to [maxRetries] times with a 2-second pause so the GPS chip
-  /// can acquire real satellites instead of falling back to WiFi/cell-tower
-  /// estimates (which can be 100-500 m off).
+  /// iOS/Android-compatible accurate position via stream.
+  /// Collects readings for up to [timeout] and returns the best (lowest
+  /// accuracy radius) one.  Returns early if [targetAccuracyMeters] is beaten.
+  /// Using a stream avoids the iOS getCurrentPosition() timeout that forced
+  /// the original code to use LocationAccuracy.medium (WiFi, ±100-500 m).
   Future<Position?> _getAccuratePosition({
-    int maxRetries = 3,
-    double maxAccuracyMeters = 100,
+    double targetAccuracyMeters = 50,
+    Duration timeout = const Duration(seconds: 20),
   }) async {
-    for (int i = 0; i < maxRetries; i++) {
-      try {
-        final pos = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.best,
-          timeLimit: const Duration(seconds: 15),
-        );
-        if (pos.accuracy <= maxAccuracyMeters) return pos;
-      } catch (_) {}
-      if (i < maxRetries - 1) await Future.delayed(const Duration(seconds: 2));
-    }
-    return null;
+    final completer = Completer<Position?>();
+    Position? bestSoFar;
+
+    final sub = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.best,
+        distanceFilter: 0,
+      ),
+    ).listen((pos) {
+      if (bestSoFar == null || pos.accuracy < bestSoFar!.accuracy) {
+        bestSoFar = pos;
+      }
+      if (pos.accuracy <= targetAccuracyMeters && !completer.isCompleted) {
+        completer.complete(pos);
+      }
+    }, onError: (_) {
+      if (!completer.isCompleted) completer.complete(bestSoFar);
+    });
+
+    Future.delayed(timeout, () {
+      if (!completer.isCompleted) completer.complete(bestSoFar);
+    });
+
+    final result = await completer.future;
+    await sub.cancel();
+    return result;
   }
 
   _sendAttendance() async {

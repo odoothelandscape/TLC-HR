@@ -2,6 +2,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'dart:async';
 import 'dart:convert';
 
 import '../../data/models/office_locations.dart';
@@ -76,25 +77,49 @@ class AttendanceChecker {
     return false; // ❌ No matching location
   }
 
-  /// Returns a GPS position with accuracy ≤ [maxAccuracyMeters].
-  /// Retries up to [maxRetries] times (2-second pause between attempts) so the
-  /// GPS chip has time to get a real satellite fix instead of a network estimate.
-  /// Returns null if no accurate fix is obtained within the retries.
+  /// iOS/Android-compatible accurate position.
+  ///
+  /// Uses a position STREAM instead of getCurrentPosition() so iOS never hits
+  /// a timeout trying to warm up the GPS chip.  We collect readings for up to
+  /// [timeout] seconds and return the BEST (lowest accuracy value) one we see.
+  /// If any reading beats [targetAccuracyMeters] we return early — no need to
+  /// wait the full timeout.
+  ///
+  /// This replaces the old LocationAccuracy.medium approach (network-based,
+  /// ±100-500 m) while staying safe on iOS.
   Future<Position?> _getAccuratePosition({
-    int maxRetries = 3,
-    double maxAccuracyMeters = 100,
+    double targetAccuracyMeters = 50,
+    Duration timeout = const Duration(seconds: 20),
   }) async {
-    for (int i = 0; i < maxRetries; i++) {
-      try {
-        final pos = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.best,
-          timeLimit: const Duration(seconds: 15),
-        );
-        if (pos.accuracy <= maxAccuracyMeters) return pos;
-      } catch (_) {}
-      if (i < maxRetries - 1) await Future.delayed(const Duration(seconds: 2));
-    }
-    return null;
+    final completer = Completer<Position?>();
+    Position? bestSoFar;
+
+    final sub = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.best,
+        distanceFilter: 0,
+      ),
+    ).listen((pos) {
+      // Keep the reading with the smallest accuracy radius
+      if (bestSoFar == null || pos.accuracy < bestSoFar!.accuracy) {
+        bestSoFar = pos;
+      }
+      // Return early once we're accurate enough
+      if (pos.accuracy <= targetAccuracyMeters && !completer.isCompleted) {
+        completer.complete(pos);
+      }
+    }, onError: (_) {
+      if (!completer.isCompleted) completer.complete(bestSoFar);
+    });
+
+    // Hard timeout — return best available even if target not reached
+    Future.delayed(timeout, () {
+      if (!completer.isCompleted) completer.complete(bestSoFar);
+    });
+
+    final result = await completer.future;
+    await sub.cancel();
+    return result;
   }
 
   /// iOS-compatible location permission check using Geolocator's own API
