@@ -1,5 +1,3 @@
-import 'dart:ui';
-import 'package:flutter/material.dart';
 
 class MessageAndAlertText{
   static const String enterUrl = 'Please enter url.';

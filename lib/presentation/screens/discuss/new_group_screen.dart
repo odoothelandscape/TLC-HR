@@ -3,6 +3,7 @@ import 'package:talent_hr/data/api/discuss_api.dart';
 import 'package:talent_hr/data/models/discuss/channel_model.dart';
 import 'package:talent_hr/utility/style/theme.dart';
 import 'chat_screen.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
 class NewGroupScreen extends StatefulWidget {
   const NewGroupScreen({Key? key}) : super(key: key);
@@ -68,13 +69,13 @@ class _NewGroupScreenState extends State<NewGroupScreen> {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a group name')),
+        SnackBar(content: Text(context.l10n.pleaseEnterGroupName)),
       );
       return;
     }
     if (_selectedIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least one member')),
+        SnackBar(content: Text(context.l10n.pleaseSelectOneMember)),
       );
       return;
     }
@@ -106,7 +107,7 @@ class _NewGroupScreenState extends State<NewGroupScreen> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to create group')),
+        SnackBar(content: Text(context.l10n.failedToCreateGroup)),
       );
     }
   }
@@ -119,11 +120,11 @@ class _NewGroupScreenState extends State<NewGroupScreen> {
       appBar: AppBar(
         backgroundColor: ColorObj.mainColor,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('New Group', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(context.l10n.newGroup, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         actions: [
           TextButton(
             onPressed: _createGroup,
-            child: const Text('Create', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            child: Text(context.l10n.create, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
           ),
         ],
       ),
@@ -136,7 +137,7 @@ class _NewGroupScreenState extends State<NewGroupScreen> {
             child: TextField(
               controller: _nameController,
               decoration: InputDecoration(
-                hintText: 'Group name...',
+                hintText: context.l10n.groupNameHint,
                 prefixIcon: const Icon(Icons.group, color: ColorObj.mainColor),
                 filled: true,
                 fillColor: Colors.grey[100],
@@ -179,7 +180,7 @@ class _NewGroupScreenState extends State<NewGroupScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search employee...',
+                hintText: context.l10n.searchEmployee,
                 prefixIcon: const Icon(Icons.search, color: ColorObj.mainColor),
                 filled: true,
                 fillColor: Colors.grey[100],

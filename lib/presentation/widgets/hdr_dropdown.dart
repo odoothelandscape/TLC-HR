@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:talent_hr/utility/style/theme.dart';
 
 class HRDropDown extends StatefulWidget {
-  List<String> items;
-  String? selectedValue;
-  String hint;
-  HRDropDown(
+  final List<String> items;
+  final String? selectedValue;
+  final String hint;
+  const HRDropDown(
       {Key? key,
       required this.items,
       required this.selectedValue,
@@ -18,6 +18,22 @@ class HRDropDown extends StatefulWidget {
 }
 
 class _HRDropDownState extends State<HRDropDown> {
+  String? _selectedValue;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedValue = widget.selectedValue;
+  }
+
+  @override
+  void didUpdateWidget(covariant HRDropDown oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedValue != oldWidget.selectedValue) {
+      _selectedValue = widget.selectedValue;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -63,10 +79,10 @@ class _HRDropDownState extends State<HRDropDown> {
                       ),
                     ))
                 .toList(),
-            value: widget.selectedValue,
+            value: _selectedValue,
             onChanged: (value) {
               setState(() {
-                widget.selectedValue = value as String;
+                _selectedValue = value as String;
               });
             },
           ),

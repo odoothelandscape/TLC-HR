@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
 
 class CustomEventDialog extends StatefulWidget {
-  CustomEventDialog({Key? key}) : super(key: key);
+  const CustomEventDialog({Key? key}) : super(key: key);
 
   @override
-  CustomEventDialogState createState() => new CustomEventDialogState();
+  CustomEventDialogState createState() => CustomEventDialogState();
 }
 
 class CustomEventDialogState extends State<CustomEventDialog> {
@@ -13,7 +14,7 @@ class CustomEventDialogState extends State<CustomEventDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.transparent,
-      child: Container(
+      child: SizedBox(
         width: 160,
         child: Card(
           shape: RoundedRectangleBorder(
@@ -24,42 +25,42 @@ class CustomEventDialogState extends State<CustomEventDialog> {
           child: Wrap(
             children: <Widget>[
               Container(
-                padding: EdgeInsets.all(20),
+                padding: const EdgeInsets.all(20),
                 width: double.infinity,
                 color: Colors.red[300],
                 child: Column(
                   children: <Widget>[
                     Container(height: 10),
-                    Icon(Icons.cloud_off, color: Colors.white, size: 80),
+                    const Icon(Icons.cloud_off, color: Colors.white, size: 80),
                     Container(height: 10),
-                    Text("No internet !",
-                        style: Theme.of(context).textTheme.headline6!
+                    Text(context.l10n.noInternet,
+                        style: Theme.of(context).textTheme.titleLarge!
                             .copyWith(color: Colors.white)),
                     Container(height: 10),
                   ],
                 ),
               ),
               Container(
-                padding: EdgeInsets.all(20),
+                padding: const EdgeInsets.all(20),
                 width: double.infinity,
                 child: Column(
                   children: <Widget>[
                     Text(
-                        'Your device will need to make sure wifi or mobile data are turn on.',
+                        context.l10n.turnOnInternetMessage,
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.subtitle1!
-                            .copyWith(color: Color(0xFF666666))),
+                        style: Theme.of(context).textTheme.titleMedium!
+                            .copyWith(color: const Color(0xFF666666))),
                     Container(height: 10),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        primary: Colors.red[300],
+                        backgroundColor: Colors.red[300],
                         padding:
-                            EdgeInsets.symmetric(vertical: 0, horizontal: 40),
+                            const EdgeInsets.symmetric(vertical: 0, horizontal: 40),
                         shape: RoundedRectangleBorder(
-                            borderRadius: new BorderRadius.circular(18.0)),
+                            borderRadius: BorderRadius.circular(18.0)),
                       ),
                       child:
-                          Text("Retry", style: TextStyle(color: Colors.white)),
+                          Text(context.l10n.retry, style: TextStyle(color: Colors.white)),
                       onPressed: () {
                         Navigator.of(context).pop();
                       },

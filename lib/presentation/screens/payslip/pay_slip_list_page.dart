@@ -1,9 +1,5 @@
-import 'dart:ffi';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
 import 'package:talent_hr/presentation/screens/payslip/pay_slip.dart';
 import 'package:talent_hr/presentation/widgets/no_data.dart';
@@ -14,8 +10,8 @@ import '../../../data/api/pay_slip_api.dart';
 import '../../../data/database/dao/employee_dao.dart';
 import '../../../data/models/employee/employee.dart';
 import '../../../data/models/pay_slip/pay_slip.dart';
-import '../../widgets/custom_event_dialog.dart';
 import '../dashboard/dashboard_main.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
 class PaySlipListScreen extends StatefulWidget {
   const PaySlipListScreen({Key? key}) : super(key: key);
@@ -43,6 +39,7 @@ class _PaySlipListScreenState extends State<PaySlipListScreen> {
     loadData();
   }
 
+  @override
   void dispose() {
     super.dispose();
   }
@@ -66,7 +63,7 @@ class _PaySlipListScreenState extends State<PaySlipListScreen> {
       onWillPop: () async {
         Navigator.pushAndRemoveUntil(context,
             MaterialPageRoute(builder: (BuildContext context) {
-          return HomeScreen();
+          return const HomeScreen();
         }), (r) {
           return false;
         });
@@ -81,14 +78,14 @@ class _PaySlipListScreenState extends State<PaySlipListScreen> {
                     if (!mounted) return;
                     Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (BuildContext context) {
-                      return HomeScreen();
+                      return const HomeScreen();
                     }));
                   },
-                  child: Icon(Icons.home)),
+                  child: const Icon(Icons.home)),
             elevation: 0,
             backgroundColor: ColorObj.mainColor,
             title: Text(
-              "Pay Slip",
+              context.l10n.payslip,
               style: TextStyle(fontSize: 16),
             ),
           ),
@@ -99,12 +96,12 @@ class _PaySlipListScreenState extends State<PaySlipListScreen> {
               
                 if (snapshot.hasError) {
                 
-                  return noDataWidget();
+                  return noDataWidget(context);
                 } else if (snapshot.hasData) {
               
 
-                  return snapshot.data!.length == 0
-                      ? noDataWidget()
+                  return snapshot.data!.isEmpty
+                      ? noDataWidget(context)
                       : ListView.builder(
                           shrinkWrap: true,
                           itemCount: snapshot.data!.length,
@@ -129,7 +126,7 @@ class _PaySlipListScreenState extends State<PaySlipListScreen> {
                                             snapshot.data![index]))),
                                 child: Card(
                                     child: Container(
-                                  color: Color(0xff2d70be), //0xff007fc0
+                                  color: const Color(0xff2d70be), //0xff007fc0
                                   child: Container(
                                     child: Row(
                                         mainAxisAlignment:
@@ -138,7 +135,7 @@ class _PaySlipListScreenState extends State<PaySlipListScreen> {
                                           Expanded(
                                             flex: 2,
                                             child: Container(
-                                              padding: EdgeInsets.all(15),
+                                              padding: const EdgeInsets.all(15),
                                               child: Text(
                                                 month,
                                                 style: normalLargeWhiteText,
@@ -149,7 +146,7 @@ class _PaySlipListScreenState extends State<PaySlipListScreen> {
                                           Expanded(
                                             flex: 6,
                                             child: Container(
-                                              padding: EdgeInsets.all(15),
+                                              padding: const EdgeInsets.all(15),
                                               color: Colors.white,
                                               child: Column(
                                                 crossAxisAlignment:
@@ -166,7 +163,7 @@ class _PaySlipListScreenState extends State<PaySlipListScreen> {
                                                       ),
                                                     ],
                                                   ),
-                                                  SizedBox(
+                                                  const SizedBox(
                                                     height: 8,
                                                   ),
                                                   Row(
@@ -174,34 +171,29 @@ class _PaySlipListScreenState extends State<PaySlipListScreen> {
                                                         MainAxisAlignment
                                                             .spaceBetween,
                                                     children: [
-                                                      // snapshot.data![index]. == 'NET'  ?
+                                                      // snapshot.data![index]. == context.l10n.net  ?
                                                       Text(
                                                         numberFormat.format(
                                                                 snapshot
                                                                     .data![
                                                                         index]
-                                                                    .net) +
-                                                            '',
+                                                                    .net),
                                                         style:
                                                             listRow2TextStyle,
                                                       ),
                                                       Text(
-                                                        snapshot.data![index]
+                                                        '${snapshot.data![index]
                                                                 .dateTo
                                                                 .substring(
-                                                                    8, 10) +
-                                                            '-' +
-                                                            snapshot
+                                                                    8, 10)}-${snapshot
                                                                 .data![index]
                                                                 .dateTo
                                                                 .substring(
-                                                                    5, 7) +
-                                                            '-' +
-                                                            snapshot
+                                                                    5, 7)}-${snapshot
                                                                 .data![index]
                                                                 .dateTo
                                                                 .substring(
-                                                                    0, 4),
+                                                                    0, 4)}',
                                                         style:
                                                             normalMediumBalckText,
                                                       )
@@ -217,7 +209,7 @@ class _PaySlipListScreenState extends State<PaySlipListScreen> {
                          
                           });
                 } else {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
               })),
     );

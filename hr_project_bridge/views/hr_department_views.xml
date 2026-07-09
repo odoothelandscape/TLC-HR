@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         DEPARTMENT FORM — add Projects smart button
+    ════════════════════════════════════════════════════════════════════════ -->
+    <record id="view_department_form_inherit_project_bridge" model="ir.ui.view">
+        <field name="name">hr.department.form.inherit.project.bridge</field>
+        <field name="model">hr.department</field>
+        <field name="inherit_id" ref="hr.view_department_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_department_projects"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-folder-open">
+                    <field name="project_count"
+                           widget="statinfo"
+                           string="Projects"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

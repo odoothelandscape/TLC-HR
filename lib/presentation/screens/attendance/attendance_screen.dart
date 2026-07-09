@@ -3,7 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -28,8 +27,17 @@ import '../../widgets/leave_time_picker.dart';
 import '../../widgets/no_data.dart';
 import '../../widgets/widgets.dart';
 import '../base.account/login.dart';
+import 'justification_dialog.dart';
+import 'justification_list_page.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
 class AttendanceScreen extends StatefulWidget {
+  /// 0 = attendance history, 1 = justification requests
+  final int initialTab;
+
+  const AttendanceScreen({Key? key, this.initialTab = 0}) : super(key: key);
+
+  @override
   _AttendanceScreenState createState() => _AttendanceScreenState();
 }
 
@@ -77,6 +85,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   //QRViewController? controller;
   //Barcode? result;
 
+  @override
   void initState() {
     toast = FToast();
     toast!.init(context);
@@ -124,8 +133,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       lastAttendance = tempAttendance;
       if (lastAttendance!.check_out_time == '') {
         pref.setBool('is_check_in', false);
-      } else
+      } else {
         pref.setBool('is_check_in', true);
+      }
     }
 
     _isCheckIn = pref.getBool('is_check_in');
@@ -133,8 +143,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   Future bindData() async {
     bool checkInternet = await InternetConnectionChecker().hasConnection;
+    if (!mounted) return;
     if (checkInternet == false) {
-      showDialog(context: context, builder: (_) => CustomEventDialog());
+      showDialog(context: context, builder: (_) => const CustomEventDialog());
       return;
     }
     attList = [];
@@ -143,7 +154,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     attList = [];
     attList = await attendanceDao.getAttendanceList();
 
-    if (attList.length <= 0) {
+    if (attList.isEmpty) {
       noMoreToShow = true;
       loading = false;
     } else {
@@ -154,10 +165,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     setState(() {});
   }
 
-  Future<Null> refreshList() async {
+  Future<void> refreshList() async {
     bool checkInternet = await InternetConnectionChecker().hasConnection;
+    if (!mounted) return;
     if (checkInternet == false) {
-      showDialog(context: context, builder: (_) => CustomEventDialog());
+      showDialog(context: context, builder: (_) => const CustomEventDialog());
       return;
     }
     await bindData();
@@ -191,27 +203,30 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
    
 
     bool checkInternet = await InternetConnectionChecker().hasConnection;
+    if (!mounted) return;
     if (checkInternet == false) {
-      showDialog(context: context, builder: (_) => CustomEventDialog());
+      showDialog(context: context, builder: (_) => const CustomEventDialog());
       return;
     }
 
     await attendanceApi.getAttendanceListByFilter(filter, startDate, endDate);
     await bindData2();
 
+    if (!mounted) return;
     if (filter == 'custom') Navigator.pop(context);
   }
 
   Future bindData2() async {
     bool checkInternet = await InternetConnectionChecker().hasConnection;
+    if (!mounted) return;
     if (checkInternet == false) {
-      showDialog(context: context, builder: (_) => CustomEventDialog());
+      showDialog(context: context, builder: (_) => const CustomEventDialog());
       return;
     }
     attList = [];
     attList = await attendanceDao.getAttendanceList();
 
-    if (attList.length <= 0) {
+    if (attList.isEmpty) {
       noMoreToShow = true;
       loading = false;
     } else {
@@ -222,6 +237,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     setState(() {});
   }
 
+  @override
   void dispose() {
     // controller?.dispose();
     super.dispose();
@@ -233,8 +249,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   _sendAttendance() async {
     bool checkInternet = await InternetConnectionChecker().hasConnection;
+    if (!mounted) return;
     if (checkInternet == false) {
-      showDialog(context: context, builder: (_) => CustomEventDialog());
+      showDialog(context: context, builder: (_) => const CustomEventDialog());
       return;
     }
 
@@ -251,7 +268,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         EasyLoading.show(status: '................');
         EasyLoading.dismiss();
         toast!.showToast(
-          child: Widgets().getWarningToast('Today, already check in'),
+          child: Widgets().getWarningToast(context.l10n.alreadyCheckedInToday),
           gravity: ToastGravity.BOTTOM,
           toastDuration: const Duration(seconds: 2),
         );
@@ -262,7 +279,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       att = await _insertCheckout();
     }
 
-    // EasyLoading.show(status: 'Submitting. Please Wait...');
+    // EasyLoading.show(status: context.l10n.submittingPleaseWait);
 
     await _syncToServer(att);
     await refreshList();
@@ -278,9 +295,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
    
     var shareComponent = ShareComponentClass();
     var deviceStatus = await shareComponent.readDeviceId();
-    DateTime _currentDateTime = DateTime.now();
+    DateTime currentDateTime = DateTime.now();
     String check_in_datetime =
-        DateUtil().getSqlDateTime(_currentDateTime, 'yyyy-MM-dd HH:mm:ss');
+        DateUtil().getSqlDateTime(currentDateTime, 'yyyy-MM-dd HH:mm:ss');
 
     Attendance att = Attendance(
         0,
@@ -320,9 +337,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
     if (tempAttendance != null) {
       attendance = tempAttendance;
-      DateTime _currentDateTime = DateTime.now();
+      DateTime currentDateTime = DateTime.now();
       String check_out_datetime =
-          DateUtil().getSqlDateTime(_currentDateTime, 'yyyy-MM-dd HH:mm:ss');
+          DateUtil().getSqlDateTime(currentDateTime, 'yyyy-MM-dd HH:mm:ss');
 
       Attendance att = Attendance(
           attendance!.attendanceId,
@@ -348,7 +365,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           '',
           '',
           id: attendance.id);
-      print('att----$att');
       return att;
     } else {
       return null;
@@ -361,7 +377,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       EasyLoading.dismiss();
 
       toast!.showToast(
-        child: Widgets().getErrorToast('Today, already check in'),
+        child: Widgets().getErrorToast(context.l10n.alreadyCheckedInToday),
         gravity: ToastGravity.BOTTOM,
         toastDuration: const Duration(seconds: 2),
       );
@@ -369,12 +385,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     }
 
     var checkInResult;
-    EasyLoading.show(status: 'Submitting. Please Wait...');
+    EasyLoading.show(status: context.l10n.submittingPleaseWait);
 
-    if (_isCheckIn!)
+    if (_isCheckIn!) {
       checkInResult = await attendanceApi.createAttendance(attendance, '');
-    else
+    } else {
       checkInResult = await attendanceApi.checkOutAttendance(attendance, '');
+    }
 
 
 
@@ -382,23 +399,24 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       var message;
 
       if (checkInResult['attendanceMessage'] == '') {
-        message = 'Check In Fail.';
+        message = context.l10n.checkInFail;
       } else {
         message = checkInResult['attendanceMessage'];
         if (message == 'Invalid cookie.') {
           EasyLoading.dismiss();
           toast!.showToast(
             child:
-                Widgets().getErrorToast('Session Expired.Please login again.'),
+                Widgets().getErrorToast(context.l10n.sessionExpired),
             gravity: ToastGravity.BOTTOM,
             toastDuration: const Duration(seconds: 3),
           );
           await pref.setString('jwt_token', "null");
           await Future.delayed(const Duration(seconds: 4));
 
+          if (!mounted) return;
           Navigator.of(_scaffoldCtx).pushAndRemoveUntil(
               MaterialPageRoute(builder: (BuildContext context) {
-            return LoginScreen();
+            return const LoginScreen();
           }), (route) => false);
 
           return;
@@ -416,6 +434,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
     EasyLoading.dismiss();
 
+    if (!mounted) return;
     toast = FToast();
     toast!.init(context); //Custom edit
 
@@ -424,13 +443,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     if (status == 'exist') {
       toast!.showToast(
         child: Widgets()
-            .getErrorToast('Attendance date is already exist in the system.'),
+            .getErrorToast(context.l10n.attendanceDateExists),
         gravity: ToastGravity.BOTTOM,
         toastDuration: const Duration(seconds: 3),
       );
     } else if (status == 'in') {
       toast!.showToast(
-        child: Widgets().getSuccessToast('Check In Successful'),
+        child: Widgets().getSuccessToast(context.l10n.checkInSuccessful),
         gravity: ToastGravity.BOTTOM,
         toastDuration: const Duration(seconds: 3),
       );
@@ -455,7 +474,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     } else if (status == 'out') {
    
       toast!.showToast(
-        child: Widgets().getSuccessToast('Check Out Successful'),
+        child: Widgets().getSuccessToast(context.l10n.checkOutSuccessful),
         gravity: ToastGravity.BOTTOM,
         toastDuration: const Duration(seconds: 3),
       );
@@ -474,6 +493,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     _scaffoldCtx = context;
     // SizeConfig().init(context);
@@ -485,26 +505,29 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         }
         Navigator.pushAndRemoveUntil(context,
             MaterialPageRoute(builder: (BuildContext context) {
-          return HomeScreen();
+          return const HomeScreen();
         }), (r) {
           return false;
         });
 
         return false;
       },
-      child: Scaffold(
+      child: DefaultTabController(
+        length: 2,
+        initialIndex: widget.initialTab,
+        child: Scaffold(
           appBar: AppBar(
               leading: InkWell(
                   onTap: () {
                     if (!mounted) return;
                     Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (BuildContext context) {
-                      return HomeScreen();
+                      return const HomeScreen();
                     }));
                   },
                   child: const Icon(Icons.home)),
               title: Text(
-                "Attendance",
+                context.l10n.attendance,
                 style: appBarTitleStyle,
               ),
               backgroundColor: style.ColorObj.mainColor,
@@ -521,7 +544,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                        InkWell(
                           onTap: () async {
                             EasyLoading.show(
-                              status: 'Getting current location...',
+                              status: context.l10n.gettingCurrentLocation,
                             );
 
                             bool hasGPSPermission = false;
@@ -536,7 +559,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                             if (!hasGPSPermission) {
                               toast?.showToast(
                                 child: Widgets().getWarningToast(
-                                  'You are not allowed to check in/out from this location',
+                                  context.l10n.notAllowedLocation,
                                 ),
                                 gravity: ToastGravity.BOTTOM,
                                 toastDuration: const Duration(seconds: 3),
@@ -570,10 +593,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               bool checkInternet =
                                   await InternetConnectionChecker()
                                       .hasConnection;
+                              if (!mounted) return;
                               if (checkInternet == false) {
                                 showDialog(
                                     context: context,
-                                    builder: (_) => CustomEventDialog());
+                                    builder: (_) => const CustomEventDialog());
                                 return;
                               }
                               setState(() {
@@ -581,7 +605,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                 noMoreToShow = false;
                               });
                               EasyLoading.show(
-                                  status: 'Fetching data...........');
+                                  status: context.l10n.fetchingData);
                               refreshList();
                             },
                             child: const Padding(
@@ -603,6 +627,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                   height: 20,
                                   padding:
                                       const EdgeInsets.only(left: 5, right: 5),
+                                  value: 0,
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -622,7 +647,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                           Expanded(
                                               flex: 4,
                                               child: Text(
-                                                "Today",
+                                                context.l10n.today,
                                                 textAlign: TextAlign.left,
                                                 style: listRow1TextStyle,
                                               )),
@@ -631,7 +656,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                       const PopupMenuDivider()
                                     ],
                                   ),
-                                  value: 0,
                                 ),
                                
                               
@@ -643,6 +667,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                   height: 20,
                                   padding:
                                       const EdgeInsets.only(left: 5, right: 5),
+                                  value: 4,
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -661,22 +686,40 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                           //     flex: 1, child: Container()),
                                           Expanded(
                                               flex: 4,
-                                              child: Text("Custom",
+                                              child: Text(context.l10n.custom,
                                                   textAlign: TextAlign.left,
                                                   style: listRow1TextStyle)),
                                         ],
                                       ),
                                     ],
                                   ),
-                                  value: 4,
                                 )
                               ];
                             }),
                       ],
                     )),
-              ]),
+              ],
+              bottom: TabBar(
+                indicatorColor: Colors.white,
+                labelStyle:
+                    TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                tabs: [
+                  Tab(text: context.l10n.history),
+                  Tab(text: context.l10n.justifications),
+                ],
+              )),
           //drawer: drawerWidget(context, employee, odoo, createPassword),
-          body: attList.length > 0
+          body: TabBarView(children: [
+            _buildHistoryTab(),
+            const JustificationListPage(),
+          ]),
+          bottomNavigationBar: _buildRecordCountBar()),
+      ),
+    );
+  }
+
+  Widget _buildHistoryTab() {
+    return attList.isNotEmpty
               ? SingleChildScrollView(
                   child: Column(
                     children: [
@@ -696,7 +739,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               ),
                              
                               child: Text(
-                                'Date',
+                                context.l10n.date,
                                 textAlign: TextAlign.center,
                                 style: style.tableHeadingStyle2,
                               ),
@@ -715,7 +758,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: Text(
-                                'Check In',
+                                context.l10n.checkIn,
                                 textAlign: TextAlign.center,
                                 style: style.tableHeadingStyle2,
                               ),
@@ -735,7 +778,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               ),
                            
                               child: Text(
-                                'Check Out',
+                                context.l10n.checkOut,
                                 textAlign: TextAlign.center,
                                 style: style.tableHeadingStyle2,
                               ),
@@ -755,7 +798,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               ),
                              
                               child: Text(
-                                'Hours',
+                                context.l10n.hours,
                                 textAlign: TextAlign.center,
                                 style: style.tableHeadingStyle2,
                               ),
@@ -785,7 +828,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                 color: todayDate == attList[i].date
                                     ? Colors.green
                                     : Colors.white,
-                                child: Row(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Row(
                                   children: [
                                     Expanded(
                                       flex: 1,
@@ -859,6 +905,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                       ),
                                     ),
                                   ],
+                                    ),
+                                    if (_hasExtraInfo(attList[i]))
+                                      _attendanceExtraRow(attList[i]),
+                                  ],
                                 ),
                               ),
                             );
@@ -867,12 +917,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   ),
                 )
               : noMoreToShow
-                  ? noDataWidget()
+                  ? noDataWidget(context)
                   : const Center(
                       child: CircularProgressIndicator(),
-                    ),
-         
-          bottomNavigationBar: Container(
+                    );
+  }
+
+  Widget _buildRecordCountBar() {
+    return Container(
             decoration: const BoxDecoration(
               border: Border(
                 top: BorderSide(
@@ -884,16 +936,108 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             alignment: Alignment.center,
             height: 25,
             width: double.infinity,
-            child: attList.length > 0
+            child: attList.isNotEmpty
                 ? Text(
                     '${attList.length} records found',
                     style: normalMediumGreyText,
                   )
                 : Text(
-                    '0 records found',
+                    context.l10n.noRecordsFound,
                     style: normalMediumGreyText,
                   ),
-          )),
+    );
+  }
+
+  bool _isMissedCheckout(Attendance att) =>
+      att.date != todayDate && (att.check_out_time ?? '').isEmpty;
+
+  bool _hasExtraInfo(Attendance att) =>
+      att.check_in_mode == 'outside' ||
+      att.check_out_mode == 'outside' ||
+      att.is_auto_checkout == 1 ||
+      _isMissedCheckout(att);
+
+  Widget _modeChip(String label, IconData icon, Color color) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 4),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 11, color: color, fontWeight: FontWeight.w600)),
+        ]),
+      );
+
+  /// Per-record source of check-in/out (official vs outside + address),
+  /// auto-checkout flag and a justification shortcut.
+  Widget _attendanceExtraRow(Attendance att) {
+    final bool isToday = todayDate == att.date;
+    final Color textColor = isToday ? Colors.white : Colors.grey[700]!;
+
+    String? justifyType;
+    if (att.is_auto_checkout == 1) {
+      justifyType = 'auto_checkout';
+    } else if (_isMissedCheckout(att)) {
+      justifyType = 'missed_checkout';
+    } else if (att.check_in_mode == 'outside' ||
+        att.check_out_mode == 'outside') {
+      justifyType = 'outside_location';
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 8, right: 8, bottom: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              if (att.check_in_mode == 'outside')
+                _modeChip(context.l10n.inOutside, Icons.location_off, Colors.purple),
+              if (att.check_out_mode == 'outside')
+                _modeChip(
+                    context.l10n.outOutside, Icons.location_off, Colors.deepPurple),
+              if (att.is_auto_checkout == 1)
+                _modeChip(context.l10n.autoCheckout, Icons.timer_off, Colors.red),
+              if (_isMissedCheckout(att))
+                _modeChip(
+                    context.l10n.missingCheckout, Icons.error_outline, Colors.orange),
+              if (justifyType != null)
+                SizedBox(
+                  height: 26,
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8)),
+                    onPressed: () {
+                      showJustificationDialog(context,
+                          type: justifyType!,
+                          attendanceId: att.attendanceId,
+                          date: att.date);
+                    },
+                    child:
+                        Text(context.l10n.justify, style: TextStyle(fontSize: 12)),
+                  ),
+                ),
+            ],
+          ),
+          if ((att.check_in_address ?? '').isNotEmpty)
+            Text('In: ${att.check_in_address}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 11, color: textColor)),
+          if ((att.check_out_address ?? '').isNotEmpty)
+            Text('Out: ${att.check_out_address}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 11, color: textColor)),
+        ],
+      ),
     );
   }
 
@@ -1025,10 +1169,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.only(left: 8.0),
                           child: Text(
-                            "Choose Date",
+                            context.l10n.chooseDate,
                             style: TextStyle(fontSize: 16, color: Colors.white),
                           ),
                         ),
@@ -1050,7 +1194,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   SizedBox(
                     height: MediaQuery.of(context).size.height * 0.02,
                   ),
-                  Container(
+                  SizedBox(
                     height: MediaQuery.of(context).size.height * 0.22,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -1060,7 +1204,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           height: MediaQuery.of(context).size.height * 0.06,
                           child: TimePickerWidget(
                             //edit border radius in library
-                            text: 'Start Date',
+                            text: context.l10n.startDate,
                             timePicker: (t) {
                               setState(() {
                                 startTime = t;
@@ -1075,10 +1219,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           height: MediaQuery.of(context).size.height * 0.03,
                         ),
                         Center(
-                            child: Container(
+                            child: SizedBox(
                           height: MediaQuery.of(context).size.height * 0.05,
-                          child: const Text(
-                            "To",
+                          child: Text(
+                            context.l10n.to,
                             style: TextStyle(
                                 fontSize: 15,
                                 color: ColorObj.textColor,
@@ -1095,7 +1239,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           margin: const EdgeInsets.symmetric(horizontal: 6),
                           height: MediaQuery.of(context).size.height * 0.06,
                           child: TimePickerWidget(
-                            text: 'End Date',
+                            text: context.l10n.endDate,
                             timePicker: (t) {
                               setState(() {
                                 endTime = t;
@@ -1105,9 +1249,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                       context: context,
                                       builder: (context) {
                                         return ErrorDialog(
-                                            title: "End Date Select Error",
-                                            content: const Text(
-                                              "Please select correct End Date",
+                                            title: context.l10n.endDateSelectError,
+                                            content: Text(
+                                              context.l10n.pleaseSelectCorrectEndDate,
                                               style: TextStyle(
                                                   color: ColorObj.textColor,
                                                   fontSize: 15),
@@ -1130,7 +1274,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   SizedBox(
                     height: MediaQuery.of(context).size.height * 0.02,
                   ),
-                  Container(
+                  SizedBox(
                     //height: MediaQuery.of(context).size.height * 0.05,
                     //padding: const EdgeInsets.only(right: 5),
                     height: MediaQuery.of(context).size.height * 0.07,
@@ -1146,7 +1290,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                   Navigator.of(context).pop();
                                   refreshList();
                                 },
-                                child: const Text("Cancel",
+                                child: Text(context.l10n.cancel,
                                     style: TextStyle(
                                         color: Colors.red, fontSize: 16)))),
                         SizedBox(
@@ -1158,7 +1302,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                   if (selectTime == false) {
                                     toast!.showToast(
                                       child: Widgets().getWarningToast(
-                                          'Please select start date'),
+                                          context.l10n.pleaseSelectStartDate),
                                       gravity: ToastGravity.BOTTOM,
                                       toastDuration: const Duration(seconds: 2),
                                     );
@@ -1167,7 +1311,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                   if (totalDays <= 0) {
                                     toast!.showToast(
                                       child: Widgets().getWarningToast(
-                                          'Please select valid date'),
+                                          context.l10n.pleaseSelectValidDate),
                                       gravity: ToastGravity.BOTTOM,
                                       toastDuration: const Duration(seconds: 2),
                                     );
@@ -1178,8 +1322,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                         endTime.toString().split(' ')[0]);
                                   }
                                 },
-                                child: const Text(
-                                  "Confirm",
+                                child: Text(
+                                  context.l10n.confirm,
                                   style: TextStyle(
                                       color: Colors.green, fontSize: 16),
                                 ))),

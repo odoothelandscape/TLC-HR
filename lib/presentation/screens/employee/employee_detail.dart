@@ -11,8 +11,12 @@ import '../../../data/database/dao/employee_dao.dart';
 import '../../../data/models/employee/employee.dart';
 import '../../widgets/custom_event_dialog.dart';
 import '../dashboard/dashboard_main.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
 class EmployeeDetailScreen extends StatefulWidget {
+  const EmployeeDetailScreen({super.key});
+
+  @override
   _EmployeeDetailScreenState createState() => _EmployeeDetailScreenState();
 }
 
@@ -29,6 +33,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
   bool fetchEmpUpdateData = false;
   var uid;
 
+  @override
   void initState() {
     super.initState();
     // for (int i = 0; i < menuActive.length; i++) {
@@ -52,25 +57,28 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
       createPassword = true;
     }
 
-    if (employee!.avatar != '')
+    if (employee!.avatar != '') {
       bytes = base64.decode("${employee!.avatar}");
-    else
+    } else {
       bytes = null;
+    }
 
     setState(() {});
   }
 
+  @override
   void dispose() {
     super.dispose();
   }
 
+  @override
   Widget build(BuildContext context) {
     //SizeConfig().init(context);
     return WillPopScope(
       onWillPop: () async {
         Navigator.pushAndRemoveUntil(context,
             MaterialPageRoute(builder: (BuildContext context) {
-          return HomeScreen();
+          return const HomeScreen();
         }), (r) {
           return false;
         });
@@ -89,10 +97,10 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                     if (!mounted) return;
                     Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (BuildContext context) {
-                      return HomeScreen();
+                      return const HomeScreen();
                     }));
                   },
-                  child: Icon(Icons.home)),
+                  child: const Icon(Icons.home)),
                   backgroundColor: ColorObj.mainColor,
                   expandedHeight: 200.0,
                   floating: false,
@@ -106,7 +114,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                             employee != null
                                 ? employee!.employee_name.toString()
                                 : '',
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16.0,
                             )),
@@ -115,14 +123,15 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                               bool checkInternet =
                                   await InternetConnectionChecker()
                                       .hasConnection;
+                              if (!mounted) return;
                               if (checkInternet == false) {
                                 showDialog(
                                     context: context,
-                                    builder: (_) => CustomEventDialog());
+                                    builder: (_) => const CustomEventDialog());
                                 return;
                               }
                               EasyLoading.show(
-                                  status: 'Fetching update data...........');
+                                  status: context.l10n.fetchingData);
                               var employeeApi = EmployeeAPI();
                               await employeeApi.getEmployeeList();
                               employee =
@@ -132,8 +141,8 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                               setState(() {});
                             },
                             child: Container(
-                              margin: EdgeInsets.only(bottom: 3, right: 5),
-                              child: Icon(
+                              margin: const EdgeInsets.only(bottom: 3, right: 5),
+                              child: const Icon(
                                 Icons.refresh,
                                 color: Colors.green,
                                 size: 25,
@@ -143,7 +152,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                     ),
                     background: bytes != null
                         ? Image.memory(bytes!, fit: BoxFit.cover)
-                        : Image(
+                        : const Image(
                             image: AssetImage('assets/imgs/default_avator.png'),
                             fit: BoxFit.cover,
                           ),
@@ -158,7 +167,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                     child: ListTile(
                       dense: true,
 
-                      visualDensity: VisualDensity(vertical: -2), // to compact
+                      visualDensity: const VisualDensity(vertical: -2), // to compact
                       title: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -190,14 +199,14 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                       ),
                     ),
                   ),
-                  Divider(
+                  const Divider(
                     height: 2,
                     thickness: 1.5,
                   ),
                   ListTile(
                     leading: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                      children: const [
                         Icon(
                           MdiIcons.clipboardAccount,
                           color: Color(0xff208d9c),
@@ -205,7 +214,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                       ],
                     ),
                     title:
-                        Text('Registration Number', style: normalSmallGreyText),
+                        Text(context.l10n.registrationNumber, style: normalSmallGreyText),
                     subtitle: Text(
                       employee != null
                           ? employee!.employee_code.toString()
@@ -216,12 +225,12 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                   ListTile(
                     leading: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                      children: const [
                         Icon(MdiIcons.genderMaleFemale,
                             color: Color(0xff208d9c)),
                       ],
                     ),
-                    title: Text('Gender', style: normalSmallGreyText),
+                    title: Text(context.l10n.gender, style: normalSmallGreyText),
                     subtitle: Text(
                         employee != null ? employee!.gender.toString() : '',
                         style: normalMediumBalckText),
@@ -229,11 +238,11 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                   ListTile(
                     leading: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                      children: const [
                         Icon(MdiIcons.cakeVariant, color: Color(0xff208d9c))
                       ],
                     ),
-                    title: Text('Birthday', style: normalSmallGreyText),
+                    title: Text(context.l10n.birthday, style: normalSmallGreyText),
                     subtitle: Text(
                         employee != null ? employee!.birthday.toString() : '',
                         style: normalMediumBalckText),
@@ -241,11 +250,11 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                   ListTile(
                     leading: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                      children: const [
                         Icon(MdiIcons.phone, color: Color(0xff208d9c)),
                       ],
                     ),
-                    title: Text('Work', style: normalSmallGreyText),
+                    title: Text(context.l10n.workPhone, style: normalSmallGreyText),
                     subtitle: Text(
                         employee != null ? employee!.work_phone! : '',
                         style: normalMediumBalckText),
@@ -255,11 +264,11 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                   ListTile(
                     leading: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                      children: const [
                         Icon(MdiIcons.phone, color: Color(0xff208d9c)),
                       ],
                     ),
-                    title: Text('Home', style: normalSmallGreyText),
+                    title: Text(context.l10n.homePhone, style: normalSmallGreyText),
                     subtitle: Text(
                         employee != null ? employee!.mobile_phone! : '',
                         style: normalMediumBalckText),
@@ -267,17 +276,38 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                   ListTile(
                     leading: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                      children: const [
                         Icon(MdiIcons.email, color: Color(0xff208d9c)),
                       ],
                     ),
-                    title: Text('Work Email', style: normalSmallGreyText),
+                    title: Text(context.l10n.workEmail, style: normalSmallGreyText),
                     subtitle: Text(
                         employee != null ? employee!.email.toString() : '',
                         style: normalMediumBalckText),
                   ),
                    
-                   Divider(
+                   ListTile(
+                    leading: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.language, color: Color(0xff208d9c)),
+                      ],
+                    ),
+                    title: Text(context.l10n.language,
+                        style: normalSmallGreyText),
+                    subtitle: Text(
+                        LocaleController.isArabic(context)
+                            ? 'العربية'
+                            : 'English',
+                        style: normalMediumBalckText),
+                    trailing: TextButton(
+                      onPressed: () => LocaleController.toggle(context),
+                      child: Text(LocaleController.isArabic(context)
+                          ? 'English'
+                          : 'العربية'),
+                    ),
+                  ),
+                   const Divider(
                     height: 2,
                     thickness: 1.5,
                   ),
@@ -288,13 +318,13 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                      child: ListTile(
                       leading: Column(
                         mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
+                        children: const [
                           // Icon(MdiIcons.fileSettings, color: Color(0xff208d9c)),
                         ],
                       ),
                       title: Text('', style: normalSmallGreyText),
                       subtitle: Text(
-                         'Sign Out',
+                         context.l10n.signOut,
                           style: normalLargeBalckText),
                                      ),
                    ),

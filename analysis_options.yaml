@@ -25,5 +25,12 @@ linter:
     # avoid_print: false  # Uncomment to disable the `avoid_print` rule
     # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
 
+    # Disabled: model fields and legacy constants intentionally mirror
+    # Odoo's snake_case/UPPER_CASE API field names (e.g. employee_id,
+    # check_in_datetime, IS_LOGIN). Renaming would touch every call site
+    # across the app for no functional benefit.
+    non_constant_identifier_names: false
+    constant_identifier_names: false
+
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

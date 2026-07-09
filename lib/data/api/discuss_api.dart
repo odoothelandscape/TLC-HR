@@ -63,7 +63,6 @@ class DiscussAPI {
       final List list = (data is List ? data : []);
       return list.map((e) => DiscussChannel.fromJson(e)).toList();
     } catch (e) {
-      print('getChannels error: $e');
       return [];
     }
   }
@@ -85,7 +84,6 @@ class DiscussAPI {
       final List list = (data is List ? data : []);
       return list.map((e) => DiscussMessage.fromJson(e)).toList();
     } catch (e) {
-      print('getMessages error: $e');
       return [];
     }
   }
@@ -101,7 +99,6 @@ class DiscussAPI {
       // data = {'success': true, 'message_id': 123}
       return data?['success'] == true;
     } catch (e) {
-      print('sendMessage error: $e');
       return false;
     }
   }
@@ -127,7 +124,6 @@ class DiscussAPI {
       // data = {'success': true, 'message_id': ..., 'attachment_id': ...}
       return data?['success'] == true;
     } catch (e) {
-      print('sendFile error: $e');
       return false;
     }
   }
@@ -153,7 +149,7 @@ class DiscussAPI {
       // data = {'success': true, 'channel_id': 123}
       if (data?['success'] == true) return data['channel_id'];
     } catch (e) {
-      print('startDm error: $e');
+      // ignore: silently ignore network/parse errors, return null below
     }
     return null;
   }
@@ -169,7 +165,7 @@ class DiscussAPI {
       // data = {'success': true, 'channel_id': 123}
       if (data?['success'] == true) return data['channel_id'];
     } catch (e) {
-      print('createGroup error: $e');
+      // ignore: silently ignore network/parse errors, return null below
     }
     return null;
   }
@@ -181,12 +177,14 @@ class DiscussAPI {
       final res = await http.post(url,
           headers: await _headers(),
           body: json.encode({}));
-      final data = _parse(res);
-      // data = [...] list directly
-      final List list = (data is List ? data : []);
+      final data = _parse(res); // returns data['result'] from server response
+      if (data == null) {
+        return [];
+      }
+      // Server returns {'result': [...]} → _parse returns the list directly
+      final List list = data is List ? data : [];
       return list.cast<Map<String, dynamic>>();
     } catch (e) {
-      print('getEmployees error: $e');
       return [];
     }
   }

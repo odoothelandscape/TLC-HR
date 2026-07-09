@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:talent_hr/app/locale_controller.dart';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -36,6 +37,7 @@ class PaySlipAPI {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
           'db_name': database!,
+          'Accept-Language': await LocaleController.odooLang(),
           'cookie': header_cookie!
       
         },
@@ -92,7 +94,7 @@ class PaySlipAPI {
 
           Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (BuildContext context) {
-            return  LoginScreen();
+            return  const LoginScreen();
           }), (route) => false);
         }
       }
@@ -123,6 +125,7 @@ class PaySlipAPI {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
           'db_name': database!,
+          'Accept-Language': await LocaleController.odooLang(),
           'cookie': header_cookie!
          
         },
@@ -194,6 +197,7 @@ class PaySlipAPI {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
           'db_name': database!,
+          'Accept-Language': await LocaleController.odooLang(),
           'cookie': header_cookie!
         
         },
@@ -221,7 +225,7 @@ class PaySlipAPI {
                   refrence: '',
                   department: list[i]['department_name'],
                   position: list[i]['position'],
-                  job_grade: employee.job_grade!,
+                  job_grade: employee?.job_grade ?? '',
                   idNumber: list[i]['id'],
                   dateFrom: list[i]['date_from'],
                   dateTo: list[i]['date_to'],

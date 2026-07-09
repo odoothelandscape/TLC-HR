@@ -21,8 +21,7 @@ class BiometricService {
       );
 
       return authenticated;
-    } on PlatformException catch (e) {
-      print(e);
+    } on PlatformException {
       return false;
     }
   }

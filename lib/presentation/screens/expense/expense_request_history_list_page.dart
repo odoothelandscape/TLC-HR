@@ -19,6 +19,7 @@ import '../../widgets/no_data.dart';
 import '../dashboard/dashboard_main.dart';
 import 'expense_history_detail.dart';
 import 'expense_request_page.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
 class ExpenseListPage extends StatefulWidget {
   const ExpenseListPage({Key? key}) : super(key: key);
@@ -58,6 +59,7 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
     loadData();
   }
 
+  @override
   void dispose() {
     super.dispose();
   }
@@ -74,17 +76,16 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
     }
 
     expenseList = await expenseDao.getExpenseList();
-    print('expenseList  1--------  ${expenseList.length}');
     // await analyticAccountAPI.getAnalyticAccountList();
     setState(() {});
     await bindData();
   }
 
   Future bindData() async {
-    print('bindData--------');
     bool checkInternet = await InternetConnectionChecker().hasConnection;
+    if (!mounted) return;
     if (checkInternet == false) {
-      showDialog(context: context, builder: (_) => CustomEventDialog());
+      showDialog(context: context, builder: (_) => const CustomEventDialog());
       return;
     }
     expenseList = [];
@@ -95,10 +96,8 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
     await expenseTaxApi.getExpenseTaxListOnline();
 
     // expenseList = [];
-    print('expenseList  22222--------${expenseList.length}');
     expenseList = await expenseDao.getExpenseList();
 
-    print('expenseList  2--------${expenseList.length}');
 
     if (expenseList.isEmpty) {
       noMoreToShow = true;
@@ -113,11 +112,12 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
 
   Future refreshList() async {
     bool checkInternet = await InternetConnectionChecker().hasConnection;
+    if (!mounted) return;
     if (checkInternet == false) {
-      showDialog(context: context, builder: (_) => CustomEventDialog());
+      showDialog(context: context, builder: (_) => const CustomEventDialog());
       return;
     }
-    EasyLoading.show(status: 'Fetching data...........');
+    EasyLoading.show(status: context.l10n.fetchingData);
     doneRefresh = true;
     // setState(() {});
     //await expenseDao.deleteExpenseRecords();
@@ -129,13 +129,11 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
   }
 
   goToExpenseDetail(BuildContext context, Expense expenseObj) async {
-    print('goToSREntry----${expenseObj.toJson()}');
 
     await Navigator.of(context)
         .pushReplacement(MaterialPageRoute(builder: (context) {
       return ExpenseHistoryDetailScreen(expenseObj);
     })).then((value) {
-      print('1');
       loadData();
     });
   }
@@ -150,7 +148,7 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
         }
         Navigator.pushAndRemoveUntil(context,
             MaterialPageRoute(builder: (BuildContext context) {
-          return HomeScreen();
+          return const HomeScreen();
         }), (r) {
           return false;
         });
@@ -165,12 +163,12 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
                   if (!mounted) return;
                   Navigator.of(context).pushReplacement(
                       MaterialPageRoute(builder: (BuildContext context) {
-                    return HomeScreen();
+                    return const HomeScreen();
                   }));
                 },
-                child: Icon(Icons.home)),
+                child: const Icon(Icons.home)),
             title: Text(
-              'Expense History List',
+              context.l10n.paymentRequestHistory,
               style: appBarTitleStyle,
             ),
             backgroundColor: ColorObj.mainColor,
@@ -186,8 +184,8 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
 
                       refreshList();
                     },
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 10.0),
+                    child: const Padding(
+                      padding: EdgeInsets.only(right: 10.0),
                       child: Icon(
                         Icons.refresh,
                         color: Colors.white,
@@ -197,41 +195,41 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
             ],
           ),
           // drawer: drawerWidget(context, employee, odoo, createPassword),
-          body: expenseList.length > 0
+          body: expenseList.isNotEmpty
               ? ListView.builder(
-                  key: PageStorageKey<String>('ExpList'),
+                  key: const PageStorageKey<String>('ExpList'),
                   itemCount: expenseList.length,
                   itemBuilder: (BuildContext context, int index) {
                     Color? stateColor;
                     Color? textColor;
                     var state = '';
                     if (expenseList[index].state == 'draft') {
-                      state = 'To Report';
+                      state = context.l10n.toReport;
                       stateColor = Colors.grey[300];
                       textColor = Colors.grey[800];
                     }
                     if (expenseList[index].state == 'submitted') {
-                      state = 'Submitted';
+                      state = context.l10n.submitted;
                       stateColor = Colors.orange;
                       textColor = Colors.white;
                     }
                     if (expenseList[index].state == 'reported') {
-                      state = 'To Submit';
-                      stateColor = Color.fromARGB(255, 107, 103, 59);
+                      state = context.l10n.toSubmit;
+                      stateColor = const Color.fromARGB(255, 107, 103, 59);
                       textColor = Colors.white;
                     }
                     if (expenseList[index].state == 'approved') {
-                      state = 'Approved';
+                      state = context.l10n.approved;
                       stateColor = Colors.cyan;
                       textColor = Colors.white;
                     }
                     if (expenseList[index].state == 'done') {
-                      state = 'Paid';
+                      state = context.l10n.paid;
                       stateColor = Colors.green;
                       textColor = Colors.white;
                     }
                     if (expenseList[index].state == 'refused') {
-                      state = 'Refused';
+                      state = context.l10n.refused;
                       stateColor = Colors.red;
                       textColor = Colors.white;
                     }
@@ -252,8 +250,8 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
                     );
                   })
               : (noMoreToShow == true)
-                  ? noDataWidget()
-                  : Center(
+                  ? noDataWidget(context)
+                  : const Center(
                       child: CircularProgressIndicator(),
                     ),
           floatingActionButton: SpeedDial(
@@ -262,30 +260,30 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
             children: [
               SpeedDialChild(
                   backgroundColor: ColorObj.mainColor,
-                  child: Icon(
+                  child: const Icon(
                     Icons.add,
                     color: Colors.white,
                   ),
-                  label: 'New Expense',
+                  label: context.l10n.newPaymentRequest,
                   onTap: () => Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => ExpenseEntryPage()))),
+                          builder: (context) => const ExpenseEntryPage()))),
               SpeedDialChild(
                   backgroundColor: ColorObj.mainColor,
-                  child: Icon(
+                  child: const Icon(
                     MdiIcons.cash,
                     color: Colors.white,
                   ),
-                  label: 'Expense History List',
+                  label: context.l10n.paymentRequestHistory,
                   onTap: () => Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => ExpenseListPage()))),
+                          builder: (context) => const ExpenseListPage()))),
             ],
           ),
           bottomNavigationBar: Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               border: Border(
                 top: BorderSide(
                   color: Colors.grey,
@@ -296,13 +294,13 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
             alignment: Alignment.center,
             height: 25,
             width: double.infinity,
-            child: expenseList.length > 0
+            child: expenseList.isNotEmpty
                 ? Text(
                     '${expenseList.length} records found',
                     style: normalMediumGreyText,
                   )
                 : Text(
-                    '0 records found',
+                    context.l10n.noRecordsFound,
                     style: normalMediumGreyText,
                   ),
           )),
@@ -319,7 +317,7 @@ class ExpenseRequestCard extends StatelessWidget {
   final String status;
   final Color statusColor;
 
-  ExpenseRequestCard({
+  const ExpenseRequestCard({super.key, 
     required this.date,
     required this.day,
     required this.description,
@@ -338,7 +336,7 @@ class ExpenseRequestCard extends StatelessWidget {
 
     var month = format.format(dateTime1);
     return Card(
-      margin: EdgeInsets.all(8.0),
+      margin: const EdgeInsets.all(8.0),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
@@ -350,7 +348,7 @@ class ExpenseRequestCard extends StatelessWidget {
                 Container(
                   width: 60, // Adjust width as needed
                   height: 20, // Adjust height as needed
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Color.fromARGB(
                         255, 97, 96, 96), // Darker grey for the month
                     borderRadius: BorderRadius.only(
@@ -361,7 +359,7 @@ class ExpenseRequestCard extends StatelessWidget {
                   child: Center(
                     child: Text(
                       month,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                         color: Colors.white, // Month text in white
@@ -374,7 +372,7 @@ class ExpenseRequestCard extends StatelessWidget {
                   height: 30, // Adjust height as needed
                   decoration: BoxDecoration(
                     color: Colors.grey[200], // Lighter grey for the day
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(8.0),
                       bottomRight: Radius.circular(8.0),
                     ),
@@ -382,7 +380,7 @@ class ExpenseRequestCard extends StatelessWidget {
                   child: Center(
                     child: Text(
                       day,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 20,
                       ),
@@ -391,26 +389,26 @@ class ExpenseRequestCard extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(width: 16),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     description,
-                    style: TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 16),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
                       Text(
                         expenseType,
-                        style: TextStyle(fontSize: 14,color: Colors.grey),
+                        style: const TextStyle(fontSize: 14,color: Colors.grey),
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Container(
                         padding:
-                            EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: statusColor.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(8),
@@ -426,10 +424,10 @@ class ExpenseRequestCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     numberFormat.format(amount).toString(),
-                    style: TextStyle(fontSize: 14),
+                    style: const TextStyle(fontSize: 14),
                   ),
                 ],
               ),

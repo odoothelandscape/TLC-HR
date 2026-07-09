@@ -7,6 +7,7 @@ import 'package:talent_hr/data/api/discuss_api.dart';
 import 'package:talent_hr/data/models/discuss/channel_model.dart';
 import 'package:talent_hr/data/models/discuss/message_model.dart';
 import 'package:talent_hr/utility/style/theme.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
 class ChatScreen extends StatefulWidget {
   final DiscussChannel channel;
@@ -128,7 +129,7 @@ class _ChatScreenState extends State<ChatScreen> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to send image. Please try again.')),
+            SnackBar(content: Text(context.l10n.failedToSendImage)),
           );
         }
       }
@@ -161,7 +162,7 @@ class _ChatScreenState extends State<ChatScreen> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to send photo. Please try again.')),
+            SnackBar(content: Text(context.l10n.failedToSendPhoto)),
           );
         }
       }
@@ -191,7 +192,7 @@ class _ChatScreenState extends State<ChatScreen> {
             Text(
               widget.channel.channelType == 'channel'
                   ? '${widget.channel.members.length} members'
-                  : 'Direct Message',
+                  : context.l10n.directMessage,
               style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
           ],
@@ -309,10 +310,10 @@ class _ChatScreenState extends State<ChatScreen> {
               color: Colors.grey[200],
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Icon(Icons.broken_image, size: 40, color: Colors.grey),
                   SizedBox(height: 4),
-                  Text('Image unavailable', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text(context.l10n.imageUnavailable, style: TextStyle(color: Colors.grey, fontSize: 12)),
                 ],
               ),
             ),
@@ -351,12 +352,12 @@ class _ChatScreenState extends State<ChatScreen> {
           IconButton(
             icon: const Icon(Icons.image, color: ColorObj.mainColor),
             onPressed: _sending ? null : _sendImage,
-            tooltip: 'Send Image',
+            tooltip: context.l10n.sendImage,
           ),
           IconButton(
             icon: const Icon(Icons.camera_alt, color: ColorObj.mainColor),
             onPressed: _sending ? null : _sendCamera,
-            tooltip: 'Camera',
+            tooltip: context.l10n.camera,
           ),
           Expanded(
             child: TextField(
@@ -365,7 +366,7 @@ class _ChatScreenState extends State<ChatScreen> {
               maxLines: 4,
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
-                hintText: 'Write a message...',
+                hintText: context.l10n.writeAMessage,
                 hintStyle: const TextStyle(color: Colors.grey),
                 filled: true,
                 fillColor: Colors.grey[100],

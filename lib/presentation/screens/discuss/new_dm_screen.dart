@@ -3,6 +3,7 @@ import 'package:talent_hr/data/api/discuss_api.dart';
 import 'package:talent_hr/data/models/discuss/channel_model.dart';
 import 'package:talent_hr/utility/style/theme.dart';
 import 'chat_screen.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
 class NewDmScreen extends StatefulWidget {
   const NewDmScreen({Key? key}) : super(key: key);
@@ -81,7 +82,7 @@ class _NewDmScreenState extends State<NewDmScreen> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to start conversation')),
+        SnackBar(content: Text(context.l10n.failedToStartConversation)),
       );
     }
   }
@@ -92,7 +93,7 @@ class _NewDmScreenState extends State<NewDmScreen> {
       appBar: AppBar(
         backgroundColor: ColorObj.mainColor,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('New Message', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(context.l10n.newMessage, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
       body: Column(
         children: [
@@ -102,7 +103,7 @@ class _NewDmScreenState extends State<NewDmScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search employee...',
+                hintText: context.l10n.searchEmployee,
                 prefixIcon: const Icon(Icons.search, color: ColorObj.mainColor),
                 filled: true,
                 fillColor: Colors.grey[100],

@@ -9,26 +9,21 @@ class AttendanceDao {
   final dbProvider = DatabaseProvider.db;
 
   Future<List<Attendance>> getAttendanceList() async {
-    print('getAttendanceList------------------------'); //To Remove log
     var db = await dbProvider.database;
     var result =
         await db!.rawQuery("SELECT * FROM attendance ORDER BY id ASC");
     List<Attendance> list = result.isNotEmpty
         ? result.map((u) => Attendance.fromJson(u)).toList()
         : [];
-    print('result ${result.toList()}'); //To Remove log
     return list;
   }
 
   Future<Attendance?> getSingleAttendanceById(int id) async {
-    print('getSingleAttendance------ $id'); //To Remove log
     var db = await dbProvider.database;
     List<Map<String, Object?>> result;
     result = await db!.rawQuery("SELECT * FROM attendance WHERE id = $id");
 
-    print('result ${result.toList()}'); //To Remove log
     if (result.isEmpty) {
-      print('getSingleAttendanceById: no record found for id=$id');
       return null;
     }
     Attendance attendance = Attendance.fromJson(result.toList()[0]);
@@ -36,14 +31,12 @@ class AttendanceDao {
   }
 
   Future<dynamic> getTodayAttendance(String date) async {
-    print('getTodayAttendance------------------------'); //To Remove log
     var db = await dbProvider.database;
     var result =
         await db!.rawQuery("SELECT * FROM attendance WHERE date = '$date'");
     List<Attendance> list = result.isNotEmpty
         ? result.map((u) => Attendance.fromJson(u)).toList()
         : [];
-    print('list --------$list'); //To Remove log
     if (list == [] || list.isEmpty) {
       return null;
     } else {
@@ -53,14 +46,12 @@ class AttendanceDao {
   }
 
   Future<dynamic> getTodayAttendanceCheckForCheckIn(String date) async {
-    print('getTodayAttendance------------------------'); //To Remove log
     var db = await dbProvider.database;
     var result = await db!.rawQuery(
         "SELECT * FROM attendance WHERE date = '$date' AND check_in_datetime != '' ");
     List<Attendance> list = result.isNotEmpty
         ? result.map((u) => Attendance.fromJson(u)).toList()
         : [];
-    print('list --------$list'); //To Remove log
     if (list == [] || list.isEmpty) {
       return null;
     } else {
@@ -70,14 +61,12 @@ class AttendanceDao {
   }
 
   Future<dynamic> getTodayAttendanceAlreadyCheckIn(String date) async {
-    print('getTodayAttendance------------------------'); //To Remove log
     var db = await dbProvider.database;
     var result = await db!.rawQuery(
         "SELECT * FROM attendance WHERE date = '$date' AND check_in_datetime != '' AND check_out_datetime == '' ");
     List<Attendance> list = result.isNotEmpty
         ? result.map((u) => Attendance.fromJson(u)).toList()
         : [];
-    print('list --------$list'); //To Remove log
     if (list == [] || list.isEmpty) {
       return null;
     } else {
@@ -114,7 +103,6 @@ class AttendanceDao {
   // }
 
   Future insertAttendance(List<Attendance> AttendanceList) async {
-    print('insertAttendance-----$AttendanceList'); //To Remove log
 
     final db = await dbProvider.database;
     Batch batch = db!.batch();
@@ -128,15 +116,12 @@ class AttendanceDao {
   }
 
   insertSingleAttendance(Attendance Attendance) async {
-    print('insertSingleAttendance------------- $Attendance'); //To Remove log
     final db = await dbProvider.database;
     final result = await db!.insert("attendance", Attendance.toJson());
-    print('result----------- $result'); //To Remove log
     return result;
   }
 
   updateAttendance(Attendance Attendance) async {
-    print('updateAttendance------${Attendance.toJson()}'); //To Remove log
     Database? db = await dbProvider.database;
     final result = await db!.update(
       'attendance',
@@ -144,15 +129,12 @@ class AttendanceDao {
       where: "id = ?",
       whereArgs: [Attendance.id],
     );
-    print("result******* $result"); //To Remove log
     return result;
   }
 
   Future<int> deleteAttendanceRecords() async {
-    print('deleteAttendanceRecords-----------');
     Database? db = await dbProvider.database;
     var result = db!.rawDelete('Delete from attendance');
-    print('result-----$result');
     return result;
   }
 }

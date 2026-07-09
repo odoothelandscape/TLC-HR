@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:talent_hr/utility/utils/extension.dart';
 
 class TimePickerWidget extends StatefulWidget {
-  String text;
-  Function(TimeOfDay) timePicker;
-  TimeOfDay init;
-  double totalHours;
+  final String text;
+  final Function(TimeOfDay) timePicker;
+  final TimeOfDay init;
+  final double totalHours;
 
-  TimePickerWidget(
+  const TimePickerWidget(
       {Key? key,
       required this.text,
       required this.timePicker,

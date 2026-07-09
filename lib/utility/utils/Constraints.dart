@@ -103,10 +103,6 @@ class Constraints {
           ];
   }
 
-  List<String> getOvertimeType() {
-    return ['Normal day overtime', 'Gazette day overtime'];
-  }
-
   List<String> getLeaveType() {
     return ['Sick Leave', 'Annual Leave', 'Casual Leave'];
   }

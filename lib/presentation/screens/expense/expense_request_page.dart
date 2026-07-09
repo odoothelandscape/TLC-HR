@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
@@ -10,7 +9,6 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:talent_hr/utility/utils/extension.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,8 +27,11 @@ import '../../widgets/custom_event_dialog.dart';
 import '../../widgets/widgets.dart';
 import '../base.account/login.dart';
 import 'expense_request_history_list_page.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
 class ExpenseEntryPage extends StatefulWidget {
+  const ExpenseEntryPage({super.key});
+
   @override
   State<ExpenseEntryPage> createState() => _ExpenseEntryPageState();
 }
@@ -48,9 +49,6 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
   List<ExpenseTax> expenseTaxList = [];
   var expensePeoductDao = ExpenseProductDao();
   var expenseTaxDao = ExpenseTaxDao();
-  int _groupValue = 0;
-  bool empSelect = true;
-  bool companySelect = false;
   var photos = <File>[];
   var images = <Uint8List>[];
   List<String> base64ImageList = [];
@@ -62,6 +60,7 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
   // var expenseDao = ExpenseDao();
   FToast? toast;
   var paidBy;
+  List<Map<String, dynamic>> pendingLines = [];
   var insertResult;
   bool makeChanges = false;
   var expenseApi = ExpenseAPI();
@@ -111,9 +110,9 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
 
   List<DropdownMenuItem<int>> _addDividersAfterItems(
       List<ExpenseProduct> items) {
-    List<DropdownMenuItem<int>> _menuItems = [];
+    List<DropdownMenuItem<int>> menuItems = [];
     for (var item in items) {
-      _menuItems.addAll(
+      menuItems.addAll(
         [
           DropdownMenuItem<int>(
             value: item.expenseProductId!,
@@ -137,14 +136,14 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
       );
     }
 
-    return _menuItems;
+    return menuItems;
   }
 
   List<DropdownMenuItem<int>> _addDividersAfterItemsForAnalyticAccount(
       List<ExpenseTax> items) {
-    List<DropdownMenuItem<int>> _menuItems = [];
+    List<DropdownMenuItem<int>> menuItems = [];
     for (var item in items) {
-      _menuItems.addAll(
+      menuItems.addAll(
         [
           DropdownMenuItem<int>(
             value: item.expenseTaxId!,
@@ -168,7 +167,7 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
       );
     }
 
-    return _menuItems;
+    return menuItems;
   }
 
 
@@ -176,7 +175,6 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
     var status = await Permission.storage.request();
 
     if (!status.isGranted) {
-      print("Storage permission denied");
       return;
     }
 
@@ -194,7 +192,6 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
         final bytes = File(file.path).readAsBytesSync();
 
         base64Image = base64Encode(bytes);
-        print(path);
       });
     } else {
       path = "";
@@ -209,14 +206,14 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
       onWillPop: () async {
         Navigator.pushReplacement(context,
             MaterialPageRoute(builder: (context) {
-          return ExpenseListPage();
+          return const ExpenseListPage();
         }));
         return false;
       },
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            'New Expense',
+            context.l10n.newPaymentRequest,
             style: appBarTitleStyle,
           ),
           backgroundColor: ColorObj.mainColor,
@@ -224,11 +221,11 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
               onTap: () {
                 Navigator.pushReplacement(context,
                     MaterialPageRoute(builder: (context) {
-                  return ExpenseListPage();
+                  return const ExpenseListPage();
                 }));
               },
-              child: Padding(
-                padding: const EdgeInsets.only(right: 10.0),
+              child: const Padding(
+                padding: EdgeInsets.only(right: 10.0),
                 child: Icon(
                   Icons.arrow_back,
                   size: 28,
@@ -238,13 +235,13 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
         ),
         body: GestureDetector(
             onTap: () {
-              FocusScope.of(context).requestFocus(new FocusNode());
+              FocusScope.of(context).requestFocus(FocusNode());
             },
             child: SingleChildScrollView(
                 child: Container(
                     color: Colors.white,
                     child: Padding(
-                        padding: EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(12),
                         child: Container(
                             child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -255,7 +252,7 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                   Text(
                                     selectedDate,
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontFamily: 'Regular',
                                         color: Color(0xff006ea5),
                                         fontSize: 16),
@@ -264,7 +261,7 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                               ),
                             
 
-                              SizedBox(
+                              const SizedBox(
                                 height: 8,
                               ),
                               Container(
@@ -301,18 +298,18 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      'Description',
+                                                      context.l10n.description,
                                                       style:
                                                           normalTextWithGrey700,
                                                     ),
-                                                    SizedBox(
+                                                    const SizedBox(
                                                       height: 8,
                                                     ),
                                                     Container(
                                                       height: 40,
                                                       width: double.infinity,
                                                       //  margin: EdgeInsets.only(right: 20),
-                                                      padding: EdgeInsets.only(
+                                                      padding: const EdgeInsets.only(
                                                           left: 10,
                                                           right: 10,
                                                           bottom: 8),
@@ -353,11 +350,11 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                               )),
                                         ],
                                       ),
-                                      SizedBox(
+                                      const SizedBox(
                                         height: 10,
                                       ),
-                                      Divider(),
-                                      SizedBox(
+                                      const Divider(),
+                                      const SizedBox(
                                         height: 10,
                                       ),
                                       Column(
@@ -366,13 +363,13 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                           children: <Widget>[
                                             Container(
                                               child: Text(
-                                                'Expense Product',
+                                                context.l10n.paymentItem,
                                                 style: normalMediumGreyText,
                                               ),
                                             ),
                                             Container(
                                                 height: 40,
-                                                margin: EdgeInsets.only(
+                                                margin: const EdgeInsets.only(
                                                   top: 8,
                                                 ),
                                                 padding:
@@ -398,7 +395,7 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                                                             5))),
                                                     isExpanded: true,
                                                     hint: Text(
-                                                      'Select Expense Product',
+                                                      context.l10n.selectPaymentItem,
                                                       style:
                                                           normalMediumGreyText,
                                                       overflow:
@@ -413,26 +410,25 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                                       expenseTypeId =
                                                           value as int;
 
-                                                      expenseProductList
-                                                          .forEach((element) {
+                                                      for (var element in expenseProductList) {
                                                         if (expenseTypeId ==
                                                             element
                                                                 .expenseProductId) {
                                                           selectedExpense =
                                                               element;
                                                         }
-                                                      });
+                                                      }
 
                                                       setState(() {});
                                                     },
                                                   ),
                                                 ))
                                           ]),
-                                      SizedBox(
+                                      const SizedBox(
                                         height: 10,
                                       ),
-                                      Divider(),
-                                      SizedBox(
+                                      const Divider(),
+                                      const SizedBox(
                                         height: 10,
                                       ),
                                       Column(
@@ -441,13 +437,13 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                           children: <Widget>[
                                             Container(
                                               child: Text(
-                                                'Expense Tax',
+                                                context.l10n.tax,
                                                 style: normalMediumGreyText,
                                               ),
                                             ),
                                             Container(
                                                 height: 40,
-                                                margin: EdgeInsets.only(
+                                                margin: const EdgeInsets.only(
                                                   top: 8,
                                                 ),
                                                 padding:
@@ -473,7 +469,7 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                                                             5))),
                                                     isExpanded: true,
                                                     hint: Text(
-                                                      'Select Expense Tax',
+                                                      context.l10n.selectTax,
                                                       style:
                                                           normalMediumGreyText,
                                                       overflow:
@@ -488,26 +484,25 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                                       expenseTaxId =
                                                           value as int;
 
-                                                      expenseTaxList
-                                                          .forEach((element) {
+                                                      for (var element in expenseTaxList) {
                                                         if (expenseTaxId ==
                                                             element
                                                                 .expenseTaxId) {
                                                           selectedExpenseTax =
                                                               element;
                                                         }
-                                                      });
+                                                      }
 
                                                       setState(() {});
                                                     },
                                                   ),
                                                 ))
                                           ]),
-                                      SizedBox(
+                                      const SizedBox(
                                         height: 10,
                                       ),
-                                      Divider(),
-                                      SizedBox(
+                                      const Divider(),
+                                      const SizedBox(
                                         height: 10,
                                       ),
                                       Row(
@@ -520,11 +515,11 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      'Bill Reference',
+                                                      context.l10n.billReference,
                                                       style:
                                                           normalMediumGreyText,
                                                     ),
-                                                    SizedBox(
+                                                    const SizedBox(
                                                       height: 8,
                                                     ),
                                                     Container(
@@ -532,7 +527,7 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                                       width: double.infinity,
                                                       // margin: EdgeInsets.only(
                                                       //     right: 12),
-                                                      padding: EdgeInsets.only(
+                                                      padding: const EdgeInsets.only(
                                                           left: 10,
                                                           right: 10,
                                                           bottom: 8),
@@ -574,11 +569,11 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                               )),
                                         ],
                                       ),
-                                      SizedBox(
+                                      const SizedBox(
                                         height: 10,
                                       ),
-                                      Divider(),
-                                      SizedBox(
+                                      const Divider(),
+                                      const SizedBox(
                                         height: 10,
                                       ),
                                       Row(
@@ -594,18 +589,18 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      'Total(Ks)',
+                                                      context.l10n.totalLabel,
                                                       style:
                                                           normalMediumGreyText,
                                                     ),
-                                                    SizedBox(
+                                                    const SizedBox(
                                                       height: 8,
                                                     ),
                                                     Container(
                                                       height: 40,
                                                       width: double.infinity,
                                                       // margin: EdgeInsets.only(left: 20),
-                                                      padding: EdgeInsets.only(
+                                                      padding: const EdgeInsets.only(
                                                           left: 10,
                                                           right: 10,
                                                           bottom: 8),
@@ -633,7 +628,7 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                                         decoration:
                                                             InputDecoration(
                                                           // hintText:
-                                                          //     'Enter Amount...........',
+                                                          //     context.l10n.enterAmount,
                                                           hintStyle:
                                                               smallTextWithGrey700,
                                                           border:
@@ -656,119 +651,11 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                               )),
                                         ],
                                       ),
-                                      SizedBox(
+                                      const SizedBox(
                                         height: 10,
                                       ),
-                                      Divider(),
-                                      SizedBox(
-                                        height: 10,
-                                      ),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            flex: 3,
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Expanded(
-                                                  flex: 2,
-                                                  child: Container(
-                                                    margin: EdgeInsets.only(
-                                                        top: 16),
-                                                    child: Text(
-                                                      'Paid By:',
-                                                      style:
-                                                          normalMediumGreyText,
-                                                      textAlign: TextAlign.left,
-                                                    ),
-                                                  ),
-                                                ),
-                                                Expanded(
-                                                  flex: 6,
-                                                  child: Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      RadioListTile(
-                                                        contentPadding:
-                                                            EdgeInsets.all(0),
-                                                        dense: true,
-                                                        value: 0,
-                                                        groupValue: _groupValue,
-                                                        title: Text(
-                                                          "Employee(To reimburse)",
-                                                          style: TextStyle(
-                                                              fontSize: 14),
-                                                        ),
-                                                        onChanged: (newValue) {
-                                                          setState(() {
-                                                            _groupValue = int
-                                                                .parse(newValue
-                                                                    .toString());
-                                                            empSelect = true;
-                                                            companySelect =
-                                                                false;
-                                                            paidBy =
-                                                                'own_account';
-                                                          });
-                                                        },
-                                                        activeColor:
-                                                            _groupValue == 0
-                                                                ? Colors
-                                                                    .lightBlue[900]
-                                                                : Colors.black,
-                                                        selected: empSelect,
-                                                      ),
-                                                      RadioListTile(
-                                                        contentPadding:
-                                                            EdgeInsets.all(0),
-                                                        dense: true,
-                                                        value: 1,
-                                                        groupValue: _groupValue,
-                                                        title: Text("Company",
-                                                            style: TextStyle(
-                                                                fontSize: 14)),
-                                                        onChanged: (newValue) {
-                                                        
-                                                          setState(() {
-                                                            _groupValue = int
-                                                                .parse(newValue
-                                                                    .toString());
-
-                                                            companySelect =
-                                                                true;
-                                                            empSelect = false;
-                                                            paidBy =
-                                                                'company_account';
-                                                          });
-                                                        },
-                                                        activeColor:
-                                                            _groupValue == 1
-                                                                ? Colors
-                                                                    .lightBlue[900]
-                                                                : Colors.black,
-                                                        selected: companySelect,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                )
-                                              ],
-                                            ),
-                                          ),
-                                          //Expanded(child: Container())
-                                        ],
-                                      ),
-                                      SizedBox(
-                                        height: 10,
-                                      ),
-                                      Divider(),
-                                      SizedBox(
+                                      const Divider(),
+                                      const SizedBox(
                                         height: 10,
                                       ),
                                       Row(
@@ -781,18 +668,18 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      'Note',
+                                                      context.l10n.note,
                                                       style:
                                                           normalMediumGreyText,
                                                     ),
-                                                    SizedBox(
+                                                    const SizedBox(
                                                       height: 8,
                                                     ),
                                                     Container(
                                                       // height: 40,
                                                       width: double.infinity,
                                                       //  margin: EdgeInsets.only(right: 20),
-                                                      padding: EdgeInsets.only(
+                                                      padding: const EdgeInsets.only(
                                                           left: 10,
                                                           right: 10,
                                                           bottom: 8),
@@ -836,7 +723,11 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                       ),
 
                                       
-                                      SizedBox(
+                                      const SizedBox(
+                                        height: 16,
+                                      ),
+                                      _buildLinesSection(),
+                                      const SizedBox(
                                         height: 30,
                                       ),
                                       SizedBox(
@@ -856,7 +747,7 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                                                           5))))),
                                               onPressed: _submitRequest,
                                               child: Text(
-                                                "Submit Request",
+                                                context.l10n.submitRequest,
                                                 style: normalLargeWhiteText,
                                               ))),
                                     
@@ -877,7 +768,7 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                       //           width: 10,
                                       //         ),
                                       //         Text(
-                                      //           'Attachment ( optional )',
+                                      //           context.l10n.attachmentOptional,
                                       //           style: normalMediumGreyText,
                                       //         ),
                                       //       ],
@@ -886,8 +777,8 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
                                       // ),
                                       Padding(
                                         padding:
-                                            EdgeInsets.symmetric(vertical: 10),
-                                        child: Text(path != null ? path : " "),
+                                            const EdgeInsets.symmetric(vertical: 10),
+                                        child: Text(path),
                                       ),
                                     
                                     ],
@@ -899,131 +790,221 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
     );
   }
 
-  _submitRequest() async {
-    bool checkInternet = await InternetConnectionChecker().hasConnection;
-    if (checkInternet == false) {
-      showDialog(context: context, builder: (_) => CustomEventDialog());
-      return;
-    }
+  bool _hasCurrentInput() =>
+      descController.text.trim().isNotEmpty ||
+      totalAmountController.text.trim().isNotEmpty;
 
-    if (descController.text == null || descController.text == '') {
+  bool _validateCurrentLine() {
+    if (descController.text == '') {
       toast!.showToast(
-        child: Widgets().getWarningToast('Please enter description'),
+        child: Widgets().getWarningToast(context.l10n.pleaseEnterDescription),
         gravity: ToastGravity.BOTTOM,
-        toastDuration: Duration(seconds: 2),
+        toastDuration: const Duration(seconds: 2),
       );
-      return;
+      return false;
     }
-
     if (selectedExpense == null) {
       toast!.showToast(
-        child: Widgets().getWarningToast('Please select expense product'),
+        child: Widgets().getWarningToast(context.l10n.pleaseSelectPaymentItem),
         gravity: ToastGravity.BOTTOM,
-        toastDuration: Duration(seconds: 2),
+        toastDuration: const Duration(seconds: 2),
       );
-      return;
+      return false;
     }
-
-    // if (billRefController.text == null || billRefController.text == '') {
-    //   toast!.showToast(
-    //     child: Widgets().getWarningToast('Please enter bill reference'),
-    //     gravity: ToastGravity.BOTTOM,
-    //     toastDuration: Duration(seconds: 2),
-    //   );
-    //   return;
-    // }
-
-    if (totalAmountController.text == null ||
-        totalAmountController.text == '') {
+    if (totalAmountController.text == '') {
       toast!.showToast(
-        child: Widgets().getWarningToast('Please enter total amount'),
+        child: Widgets().getWarningToast(context.l10n.pleaseEnterTotalAmount),
         gravity: ToastGravity.BOTTOM,
-        toastDuration: Duration(seconds: 2),
+        toastDuration: const Duration(seconds: 2),
       );
+      return false;
+    }
+    return true;
+  }
+
+  void _captureCurrentLine() {
+    var amount =
+        double.parse(totalAmountController.text.toString().replaceAll(',', ''));
+    pendingLines.add({
+      'name': descController.text.toString(),
+      'date': selectedFormatDate,
+      'bill_ref': billRefController.text.toString(),
+      'product_id': selectedExpense!.expenseProductId,
+      'product_name': selectedExpense!.name,
+      'amount': amount,
+      'tax_id':
+          selectedExpenseTax != null ? selectedExpenseTax!.expenseTaxId : 0,
+      'note': noteController.text.toString(),
+      'attachment': base64Image,
+    });
+    descController.clear();
+    totalAmountController.clear();
+    billRefController.clear();
+    noteController.clear();
+    selectedExpense = null;
+    selectedExpenseTax = null;
+    expenseTypeId = null;
+    expenseTaxId = null;
+    base64Image = '';
+    base64ImageList = [];
+    photos = [];
+    total = 0;
+    setState(() {});
+  }
+
+  void _addLine() {
+    if (_validateCurrentLine()) {
+      _captureCurrentLine();
+    }
+  }
+
+  Widget _buildLinesSection() {
+    double linesTotal = 0;
+    for (var l in pendingLines) {
+      linesTotal += l['amount'] as double;
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (pendingLines.isNotEmpty) ...[
+          Text(context.l10n.linesCount(pendingLines.length),
+              style: const TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 6),
+          for (var i = 0; i < pendingLines.length; i++)
+            Card(
+              margin: const EdgeInsets.only(bottom: 6),
+              child: ListTile(
+                dense: true,
+                title: Text('${pendingLines[i]['name']}'),
+                subtitle: Text(
+                    '${pendingLines[i]['product_name'] ?? ''}  ·  ${pendingLines[i]['date'] ?? ''}'),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                        numberFormat
+                            .format(pendingLines[i]['amount'] as double),
+                        style:
+                            const TextStyle(fontWeight: FontWeight.bold)),
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 18),
+                      onPressed: () {
+                        setState(() => pendingLines.removeAt(i));
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Text(context.l10n.totalWithValue(numberFormat.format(linesTotal)),
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: _addLine,
+            icon: const Icon(Icons.add, color: ColorObj.mainColor),
+            label: Text(context.l10n.addAnotherLine,
+                style: TextStyle(color: ColorObj.mainColor)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  _submitRequest() async {
+    bool checkInternet = await InternetConnectionChecker().hasConnection;
+    if (!mounted) return;
+    if (checkInternet == false) {
+      showDialog(context: context, builder: (_) => const CustomEventDialog());
       return;
     }
 
-    // if (noteController.text == null || noteController.text == '') {
-    //   toast!.showToast(
-    //     child: Widgets().getWarningToast('Please enter note'),
-    //     gravity: ToastGravity.BOTTOM,
-    //     toastDuration: Duration(seconds: 2),
-    //   );
-    //   return;
-    // }
+    // Capture whatever is currently typed as the last line.
+    if (_hasCurrentInput() || pendingLines.isEmpty) {
+      if (!_validateCurrentLine()) return;
+      _captureCurrentLine();
+    }
 
-    EasyLoading.show(status: 'Submitting. Please Wait...');
+    EasyLoading.show(status: context.l10n.submittingPleaseWait);
 
-    var amount = totalAmountController.text.toString().replaceAll(",", "");
-  
-    Expense expense = Expense(
-        0,
-        descController.text.toString(),
-        selectedFormatDate,
-        billRefController.text.toString(),
-        selectedExpense!.expenseProductId,
-        selectedExpense!.name,
-        double.parse(amount.toString()),
-        1,
-        total,
-        paidBy,
-        noteController.text.toString(),
-        'draft',
-        0,
-        selectedExpenseTax != null ? selectedExpenseTax!.expenseTaxId : 0,
-        //0,
-        base64Image);
+    var failed = 0;
+    var failMessage = '';
+    for (var line in List<Map<String, dynamic>>.from(pendingLines)) {
+      Expense expense = Expense(
+          0,
+          line['name'],
+          line['date'],
+          line['bill_ref'],
+          line['product_id'],
+          line['product_name'],
+          line['amount'],
+          1,
+          line['amount'],
+          'own_account',
+          line['note'],
+          'draft',
+          0,
+          line['tax_id'],
+          line['attachment']);
 
-    var createResult = await expenseApi.createExpense(expense);
+      var createResult = await expenseApi.createExpense(expense);
 
-
-    if (createResult['result'] == 'fail') {
-      var resultMessage;
-      if (createResult['message'] == '') {
-        resultMessage = 'Fail';
-      } else {
-        resultMessage = createResult['message'];
+      if (createResult['result'] == 'fail') {
+        var resultMessage = createResult['message'] == ''
+            ? context.l10n.fail
+            : createResult['message'];
         if (resultMessage == 'Invalid cookie.') {
           EasyLoading.dismiss();
           toast!.showToast(
-            child:
-                Widgets().getErrorToast('Session Expired.Please login again.'),
+            child: Widgets()
+                .getErrorToast(context.l10n.sessionExpired),
             gravity: ToastGravity.BOTTOM,
-            toastDuration: Duration(seconds: 3),
+            toastDuration: const Duration(seconds: 3),
           );
           await pref.setString('jwt_token', "null");
-          await Future.delayed(Duration(seconds: 4));
-          // timer = Timer.periodic(Duration(seconds: 3), (timer) {
+          await Future.delayed(const Duration(seconds: 4));
+          if (!mounted) return;
           Navigator.of(_scaffoldCtx).pushAndRemoveUntil(
               MaterialPageRoute(builder: (BuildContext context) {
-            return LoginScreen();
+            return const LoginScreen();
           }), (route) => false);
-
-          //});
           return;
         }
+        failed++;
+        failMessage = '$resultMessage';
+      } else {
+        pendingLines.remove(line);
       }
-
-      EasyLoading.dismiss();
-      toast!.showToast(
-        child: Widgets().getErrorToast('$resultMessage'),
-        gravity: ToastGravity.BOTTOM,
-        toastDuration: Duration(seconds: 2),
-      );
-      return;
     }
 
     EasyLoading.dismiss();
 
+    if (failed > 0) {
+      toast!.showToast(
+        child: Widgets()
+            .getErrorToast('$failed line(s) failed: $failMessage'),
+        gravity: ToastGravity.BOTTOM,
+        toastDuration: const Duration(seconds: 3),
+      );
+      setState(() {});
+      return;
+    }
+
     toast!.showToast(
-      child: Widgets().getSuccessToast('Request successfully created.'),
+      child: Widgets().getSuccessToast(context.l10n.requestCreated),
       gravity: ToastGravity.BOTTOM,
-      toastDuration: Duration(seconds: 2),
+      toastDuration: const Duration(seconds: 2),
     );
 
+    if (!mounted) return;
     await Navigator.pushReplacementNamed(context, '/expense');
   }
 
+  @override
   void dispose() {
     super.dispose();
   }
@@ -1032,36 +1013,36 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
     return SingleChildScrollView(
       child: Container(
         height: MediaQuery.of(context).size.height * 0.12,
-        margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: Column(
           children: [
             Text(
-              'Take attachment photo',
+              context.l10n.takeAttachmentPhoto,
               textAlign: TextAlign.left,
               style: TextStyle(
                 fontSize: 20.0,
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton.icon(
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.camera,
                     color: ColorObj.mainColor,
                   ),
                   onPressed: () {
                     takephoto(ImageSource.camera);
-                    Navigator.pop(this.context);
+                    Navigator.pop(context);
                   },
                   label: Text(
-                    'Camera',
+                    context.l10n.camera,
                     style: smallTextWithPurple,
                   ),
                   style: ElevatedButton.styleFrom(
-                      primary: Colors.white,
-                      side: BorderSide(
+                      backgroundColor: Colors.white,
+                      side: const BorderSide(
                         color: ColorObj.mainColor,
                         width: 1,
                       )),
@@ -1075,7 +1056,7 @@ class _ExpenseEntryPageState extends State<ExpenseEntryPage> {
   }
 
   takephoto(ImageSource source) async {
-    final pickedFile = await _picker.getImage(
+    final pickedFile = await _picker.pickImage(
       imageQuality: 85,
       source: source,
     );

@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'package:talent_hr/app/locale_controller.dart';
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -44,6 +45,7 @@ class ExpenseTaxAPI {
               'Accept': 'application/json',
               'Content-type': 'application/json',
               'db_name': database,
+            'Accept-Language': await LocaleController.odooLang(),
               'cookie': header_cookie,
             },
             body: json.encode(param))

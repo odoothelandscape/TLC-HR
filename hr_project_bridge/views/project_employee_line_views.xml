@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         STANDALONE FORM — project.employee.line
+         Opened when the user double-clicks a line or navigates to form mode.
+    ════════════════════════════════════════════════════════════════════════ -->
+    <record id="view_project_employee_line_form" model="ir.ui.view">
+        <field name="name">project.employee.line.form</field>
+        <field name="model">project.employee.line</field>
+        <field name="arch" type="xml">
+            <form string="Employee Assignment">
+                <sheet>
+                    <group>
+                        <group string="Assignment">
+                            <field name="project_id"/>
+                            <field name="employee_id"/>
+                            <field name="department_id" readonly="1"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                        <group string="Analytic Distribution">
+                            <field name="analytic_distribution"
+                                   widget="analytic_distribution"
+                                   required="1"
+                                   nolabel="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Budget">
+                            <field name="budget_line_id"/>
+                            <field name="estimated_cost" readonly="1"/>
+                        </group>
+                        <group string="Actual Cost">
+                            <field name="current_actual_cost" readonly="1"/>
+                            <field name="cost_status"
+                                   readonly="1"
+                                   widget="badge"
+                                   decoration-success="cost_status == 'under'"
+                                   decoration-warning="cost_status == 'on_track'"
+                                   decoration-danger="cost_status == 'over'"
+                                   decoration-muted="cost_status == 'no_budget'"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         TREE — opened from Employee smart button
+         Shows all projects the employee is assigned to + cost per project.
+    ════════════════════════════════════════════════════════════════════════ -->
+    <record id="view_project_employee_line_tree_employee" model="ir.ui.view">
+        <field name="name">project.employee.line.tree.employee</field>
+        <field name="model">project.employee.line</field>
+        <field name="arch" type="xml">
+            <tree string="My Projects"
+                  decoration-danger="cost_status == 'over'"
+                  decoration-warning="cost_status == 'on_track'"
+                  decoration-success="cost_status == 'under'">
+                <field name="project_id"/>
+                <field name="department_id" optional="show"/>
+                <field name="analytic_distribution"
+                       widget="analytic_distribution"
+                       readonly="1"/>
+                <field name="budget_line_id" optional="show"/>
+                <field name="estimated_cost"
+                       optional="show"
+                       sum="Total Estimated"/>
+                <field name="current_actual_cost"
+                       sum="Total Actual"/>
+                <field name="cost_status"
+                       widget="badge"
+                       decoration-success="cost_status == 'under'"
+                       decoration-warning="cost_status == 'on_track'"
+                       decoration-danger="cost_status == 'over'"
+                       decoration-muted="cost_status == 'no_budget'"/>
+                <field name="currency_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+</odoo>

@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'package:talent_hr/app/locale_controller.dart';
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,27 +14,29 @@ class loginAPI {
     pref = await SharedPreferences.getInstance();
     var urlLink = await pref.getString('url');
     database = await pref.getString('database');
-    List<Map<String, dynamic>> listData = [];
     String loginResult = '';
+    var url = Uri.parse('${urlLink}api/auth');
 
-    // URL-encode each param so special characters (@ # & + etc.) in passwords don't break the URL
-    final _encodedUsername = Uri.encodeComponent(username);
-    final _encodedPassword = Uri.encodeComponent(password);
-    final _encodedImei = Uri.encodeComponent(deviceImei);
-    final _deviceValsJson = '{"device_id":"$deviceId","name":"$deviceName","device_model":"$deviceModel"}';
-    final _encodedDeviceVals = Uri.encodeComponent(_deviceValsJson);
-    var url = Uri.parse('${urlLink}api/auth?username=$_encodedUsername&password=$_encodedPassword&device_imei=$_encodedImei&device_vals=$_encodedDeviceVals');
-    
     try {
       await http.post(
         url,
         headers: {
           'Accept': 'application/json',
+          'Content-Type': 'application/json',
           'db_name': database,
+            'Accept-Language': await LocaleController.odooLang(),
         },
+        body: json.encode({
+          'username': username,
+          'password': password,
+          'device_imei': deviceImei,
+          'device_vals': {
+            'device_id': deviceId,
+            'name': deviceName,
+            'device_model': deviceModel,
+          },
+        }),
       ).then((res) async {
-        
-
         if (res.statusCode == 403) {
           loginResult = 'Credential Error';
           return loginResult;
@@ -90,6 +93,7 @@ class loginAPI {
               'Accept': 'application/json',
               'Content-Type': 'application/json',
               'db_name': database,
+            'Accept-Language': await LocaleController.odooLang(),
               'cookie': header_cookie,
             },
             body: json.encode(param))

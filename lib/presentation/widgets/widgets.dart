@@ -1,6 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:talent_hr/utility/style/theme.dart' as Style;
+import 'package:talent_hr/utility/style/theme.dart' as style;
 
 import '../../utility/style/theme.dart';
 
@@ -15,17 +14,17 @@ class Widgets {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          const Icon(
             Icons.check,
             color: Colors.white,
           ),
-          SizedBox(
+          const SizedBox(
             width: 4.0,
           ),
           Flexible(
             child: Text(
               text,
-              style: TextStyle(fontSize: 15, color: Colors.white,),
+              style: const TextStyle(fontSize: 15, color: Colors.white,),
             ),
           ),
         ],
@@ -44,17 +43,17 @@ class Widgets {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          const Icon(
             Icons.info,
             color: Colors.white,
           ),
-          SizedBox(
+          const SizedBox(
             width: 4.0,
           ),
           Flexible(
             child: Text(
               text,
-              style: TextStyle(fontSize: 15, color: Colors.white,),
+              style: const TextStyle(fontSize: 15, color: Colors.white,),
             ),
           ),
         ],
@@ -75,17 +74,17 @@ class Widgets {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          const Icon(
             Icons.clear,
             color: Colors.white,
           ),
-          SizedBox(
+          const SizedBox(
             width: 4.0,
           ),
           Flexible(
             child: Text(
               text,
-              style: TextStyle(fontSize: 15, color: Colors.white),
+              style: const TextStyle(fontSize: 15, color: Colors.white),
             ),
           ),
         ],
@@ -103,17 +102,17 @@ class Widgets {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          const Icon(
             Icons.warning,
             color: Colors.white,
           ),
-          SizedBox(
+          const SizedBox(
             width: 4.0,
           ),
           Flexible(
             child: Text(
               text,
-              style: TextStyle(fontSize: 15, color: Colors.white),
+              style: const TextStyle(fontSize: 15, color: Colors.white),
             ),
           ),
         ],
@@ -131,17 +130,17 @@ class Widgets {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          const Icon(
             Icons.info,
             color: Colors.white,
           ),
-          SizedBox(
+          const SizedBox(
             width: 4.0,
           ),
           Flexible(
             child: Text(
               text,
-              style: TextStyle(fontSize: 15, color: Colors.white),
+              style: const TextStyle(fontSize: 15, color: Colors.white),
             ),
           ),
         ],
@@ -159,17 +158,17 @@ class Widgets {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          const Icon(
             Icons.info,
-            color: Style.ColorObj.mainColor,
+            color: style.ColorObj.mainColor,
           ),
-          SizedBox(
+          const SizedBox(
             width: 4.0,
           ),
           Flexible(
             child: Text(
               text,
-              style: TextStyle(fontSize: 15, color: Colors.white),
+              style: const TextStyle(fontSize: 15, color: Colors.white),
             ),
           ),
         ],
@@ -187,17 +186,17 @@ class Widgets {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          const Icon(
             Icons.wifi,
             color: Colors.white,
           ),
-          SizedBox(
+          const SizedBox(
             width: 4.0,
           ),
           Flexible(
             child: Text(
               text,
-              style: TextStyle(fontSize: 15, color: Colors.white),
+              style: const TextStyle(fontSize: 15, color: Colors.white),
             ),
           ),
         ],
@@ -215,17 +214,17 @@ class Widgets {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          const Icon(
             Icons.wifi_off,
             color: Colors.white,
           ),
-          SizedBox(
+          const SizedBox(
             width: 4.0,
           ),
           Flexible(
             child: Text(
               text,
-              style: TextStyle(fontSize: 15, color: Colors.white),
+              style: const TextStyle(fontSize: 15, color: Colors.white),
             ),
           ),
         ],

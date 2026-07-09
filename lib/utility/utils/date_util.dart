@@ -1,20 +1,11 @@
-import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 
 class DateUtil {
     getDateFormat(DateTime dateTime) {
         DateFormat formatter = DateFormat('EEEE, MMM d y');
         String formatted = formatter.format(dateTime);
-        print(formatted);
         return formatted;
     }
-
-    getOvertimeDateFormat() {
-        var df = new DateFormat("EEE, d MMM yyyy HH:mm:ss z");
-        var date = df.parse("Tue, 15 Nov 1994 08:12:31 PST");
-        print (df.format(date));
-    }
-
 
     getCurrentDate() {
         final DateTime now = DateTime.now();
@@ -24,30 +15,29 @@ class DateUtil {
     }
 
      getChosenDate(DateTime dateTime) {
-        final DateTime now = DateTime.now();
         final DateFormat formatter = DateFormat('yyyy-MM-dd');
         final String formatted = formatter.format(dateTime);
         return formatted;
     }
 
     getTodayDate() {
-        var now = new DateTime.now();
-        var formatter = new DateFormat('yyyy-MM-dd');
+        var now = DateTime.now();
+        var formatter = DateFormat('yyyy-MM-dd');
         String formattedDate = formatter.format(now);
         return formattedDate;
     }
 
     getTodayDateDMY() {
-        var now = new DateTime.now();
-        var formatter = new DateFormat('dd-MM-yyyy');
+        var now = DateTime.now();
+        var formatter = DateFormat('dd-MM-yyyy');
         String formattedDate = formatter.format(now);
         return formattedDate;
     }
 
-    getSqlDateTime(DateTime? date,String DATE_FORMAT) {
+    getSqlDateTime(DateTime? date,String dateFormat) {
         String dateStr = '';
         if(date!=null) {
-            var formatter = new DateFormat(DATE_FORMAT);
+            var formatter = DateFormat(dateFormat);
             dateStr = formatter.format(date);
         }
         return dateStr;
@@ -61,9 +51,9 @@ class DateUtil {
 
         if (hours.length > 1) {
             String hour = hours[0];
-            String min = "0." + hours[1];
+            String min = "0.${hours[1]}";
             String minutes = numberFormat.format(double.parse(min) * 60);
-            workingHours = hour + ":" + minutes;
+            workingHours = "$hour:$minutes";
         }
 
         return workingHours;

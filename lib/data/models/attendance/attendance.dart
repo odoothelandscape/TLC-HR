@@ -27,6 +27,12 @@ class Attendance {
   String? checkInSelfie;
   String? checkOutSelfie;
   String? work_mode;
+  double? accuracy;
+  String? check_in_mode; // 'office' | 'outside'
+  String? check_out_mode; // 'office' | 'outside'
+  String? check_in_address;
+  String? check_out_address;
+  int? is_auto_checkout; // 0/1 — set by tlc_attendance_control on backend
 
   Attendance(
       this.attendanceId,
@@ -51,7 +57,14 @@ class Attendance {
       this.att_type,
       this.checkInSelfie,
       this.checkOutSelfie,
-      {this.id, this.work_mode});
+      {this.id,
+      this.work_mode,
+      this.accuracy,
+      this.check_in_mode,
+      this.check_out_mode,
+      this.check_in_address,
+      this.check_out_address,
+      this.is_auto_checkout});
 
   factory Attendance.fromJson(Map<String, dynamic> json) =>
       _$AttendanceFromJson(json);

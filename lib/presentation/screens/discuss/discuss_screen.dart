@@ -7,6 +7,7 @@ import 'package:talent_hr/utility/style/theme.dart';
 import 'chat_screen.dart';
 import 'new_dm_screen.dart';
 import 'new_group_screen.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
 class DiscussScreen extends StatefulWidget {
   const DiscussScreen({Key? key}) : super(key: key);
@@ -84,7 +85,7 @@ class _DiscussScreenState extends State<DiscussScreen> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         backgroundColor: ColorObj.mainColor,
-        title: const Text('Discuss', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+        title: Text(context.l10n.discuss, style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
@@ -103,8 +104,8 @@ class _DiscussScreenState extends State<DiscussScreen> {
               context,
               MaterialPageRoute(builder: (_) => const NewGroupScreen()),
             ).then((_) => _loadChannels()),
+            tooltip: context.l10n.newGroup,
             child: const Icon(Icons.group_add, color: Colors.white),
-            tooltip: 'New Group',
           ),
           const SizedBox(height: 10),
           FloatingActionButton(
@@ -114,8 +115,8 @@ class _DiscussScreenState extends State<DiscussScreen> {
               context,
               MaterialPageRoute(builder: (_) => const NewDmScreen()),
             ).then((_) => _loadChannels()),
+            tooltip: context.l10n.newMessage,
             child: const Icon(Icons.chat, color: Colors.white),
-            tooltip: 'New Message',
           ),
         ],
       ),
@@ -174,7 +175,7 @@ class _DiscussScreenState extends State<DiscussScreen> {
         children: [
           Expanded(
             child: Text(
-              ch.lastMessage.isEmpty ? 'No messages yet' : ch.lastMessage,
+              ch.lastMessage.isEmpty ? context.l10n.noMessagesYet : ch.lastMessage,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -208,9 +209,9 @@ class _DiscussScreenState extends State<DiscussScreen> {
         children: [
           Icon(Icons.chat_bubble_outline, size: 70, color: Colors.grey[300]),
           const SizedBox(height: 16),
-          Text('No conversations yet', style: TextStyle(color: Colors.grey[500], fontSize: 16)),
+          Text(context.l10n.noConversationsYet, style: TextStyle(color: Colors.grey[500], fontSize: 16)),
           const SizedBox(height: 8),
-          Text('Tap the chat button to start', style: TextStyle(color: Colors.grey[400], fontSize: 14)),
+          Text(context.l10n.tapChatToStart, style: TextStyle(color: Colors.grey[400], fontSize: 14)),
         ],
       ),
     );

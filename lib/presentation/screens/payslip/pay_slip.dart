@@ -1,22 +1,19 @@
-import 'dart:ffi';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:intl/intl.dart';
 import 'package:talent_hr/presentation/screens/payslip/pay_slip_list_page.dart';
-import 'package:talent_hr/presentation/widgets/no_data.dart';
 import 'package:talent_hr/utility/style/theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../data/api/pay_slip_api.dart';
 import '../../../data/database/dao/employee_dao.dart';
 import '../../../data/models/employee/employee.dart';
 import '../../../data/models/pay_slip/pay_slip.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
 class PaySlipScreen extends StatefulWidget {
-  var startDate;
-  var endDate;
-  PaySlipModel paySlipModel;
-  PaySlipScreen(this.startDate, this.endDate, this.paySlipModel);
+  final String startDate;
+  final String endDate;
+  final PaySlipModel paySlipModel;
+  const PaySlipScreen(this.startDate, this.endDate, this.paySlipModel, {super.key});
 
   @override
   State<PaySlipScreen> createState() => _PaySlipScreenState();
@@ -44,7 +41,8 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
     loadData();
   }
 
-   void dispose() {
+   @override
+  void dispose() {
    
     super.dispose();
   }
@@ -64,7 +62,7 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
       onWillPop: () async {
         Navigator.pushAndRemoveUntil(context,
             MaterialPageRoute(builder: (BuildContext context) {
-          return PaySlipListScreen();
+          return const PaySlipListScreen();
         }), (r) {
           return false;
         });
@@ -77,7 +75,7 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
             elevation: 0,
             backgroundColor: ColorObj.mainColor,
             title: Text(
-              "Pay Slip",
+              context.l10n.payslip,
               style: TextStyle(fontSize: 16),
             ),
           ),
@@ -85,8 +83,6 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
               ? ListView.builder(
                   itemCount: 1,
                   itemBuilder: (context, page) {
-                    print(
-                        'paySlipModel!.idNumber------------${paySlipModel!.idNumber}  : ${widget.startDate}');
                     DateTime startDate = DateTime.parse(paySlipModel!.dateFrom);
                     DateTime endDate = DateTime.parse(paySlipModel!.dateTo);
                     double totalDeduction = 0;
@@ -94,16 +90,17 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                     grossDeduction = 0;
                     for (int i = 0; i < paySlipModel!.payLineList.length; i++) {
                       if ((paySlipModel!.payLineList[i]['category_name'] ==
-                                  'Allowance' ||
+                                  context.l10n.allowance ||
                               paySlipModel!.payLineList[i]['category_name'] ==
-                                  'Basic') &&
-                          paySlipModel!.payLineList[i]['total'] > 0)
+                                  context.l10n.basic) &&
+                          paySlipModel!.payLineList[i]['total'] > 0) {
                         grossEarning = grossEarning +
                             double.parse(paySlipModel!.payLineList[i]['total']
                                 .toString());
+                      }
 
                       if ((paySlipModel!.payLineList[i]['category_name'] ==
-                              'Deduction') &&
+                              context.l10n.deduction) &&
                           paySlipModel!.payLineList[i]['total'] > 0) {
                         grossDeduction = grossDeduction +
                             double.parse(paySlipModel!.payLineList[i]['total']
@@ -141,7 +138,7 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                               top: 10,
                                               bottom: 10),
                                           child: Text(
-                                            'Salary Slip',
+                                            context.l10n.salarySlip,
                                             style:
                                                 boldXLBlackText, //boldLargeWhiteText
                                           ),
@@ -149,7 +146,7 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                       ),
                                       Container(
                                         width: double.infinity,
-                                        decoration: BoxDecoration(
+                                        decoration: const BoxDecoration(
                                           shape: BoxShape.rectangle,
                                           border: Border(
                                               bottom: BorderSide(
@@ -169,13 +166,13 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                                   padding:
                                                       const EdgeInsets.all(8.0),
                                                   child: Text(
-                                                    'Reference',
+                                                    context.l10n.reference,
                                                     style:
                                                         normalMediumBalckText,
                                                   ),
                                                 ),
                                               ),
-                                              VerticalDivider(
+                                              const VerticalDivider(
                                                 color: Colors.grey,
                                                 thickness: 1,
                                               ),
@@ -201,7 +198,7 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                       ),
                                       Container(
                                         width: double.infinity,
-                                        decoration: BoxDecoration(
+                                        decoration: const BoxDecoration(
                                           shape: BoxShape.rectangle,
                                           border: Border(
                                               bottom: BorderSide(
@@ -221,13 +218,13 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                                   padding:
                                                       const EdgeInsets.all(8.0),
                                                   child: Text(
-                                                    'Employee Name',
+                                                    context.l10n.employeeName,
                                                     style:
                                                         normalMediumBalckText,
                                                   ),
                                                 ),
                                               ),
-                                              VerticalDivider(
+                                              const VerticalDivider(
                                                 color: Colors.grey,
                                                 thickness: 1,
                                               ),
@@ -253,7 +250,7 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                       ),
                                       Container(
                                         width: double.infinity,
-                                        decoration: BoxDecoration(
+                                        decoration: const BoxDecoration(
                                           shape: BoxShape.rectangle,
                                           border: Border(
                                               bottom: BorderSide(
@@ -273,13 +270,13 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                                   padding:
                                                       const EdgeInsets.all(8.0),
                                                   child: Text(
-                                                    'Employee Code',
+                                                    context.l10n.employeeCode,
                                                     style:
                                                         normalMediumBalckText,
                                                   ),
                                                 ),
                                               ),
-                                              VerticalDivider(
+                                              const VerticalDivider(
                                                 color: Colors.grey,
                                                 thickness: 1,
                                               ),
@@ -305,7 +302,7 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                       ),
                                       Container(
                                         width: double.infinity,
-                                        decoration: BoxDecoration(
+                                        decoration: const BoxDecoration(
                                           shape: BoxShape.rectangle,
                                           border: Border(
                                               bottom: BorderSide(
@@ -325,13 +322,13 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                                   padding:
                                                       const EdgeInsets.all(8.0),
                                                   child: Text(
-                                                    'Department',
+                                                    context.l10n.department,
                                                     style:
                                                         normalMediumBalckText,
                                                   ),
                                                 ),
                                               ),
-                                              VerticalDivider(
+                                              const VerticalDivider(
                                                 color: Colors.grey,
                                                 thickness: 1,
                                               ),
@@ -358,7 +355,7 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                       ),
                                       Container(
                                         width: double.infinity,
-                                        decoration: BoxDecoration(
+                                        decoration: const BoxDecoration(
                                           shape: BoxShape.rectangle,
                                           border: Border(
                                               bottom: BorderSide(
@@ -378,13 +375,13 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                                   padding:
                                                       const EdgeInsets.all(8.0),
                                                   child: Text(
-                                                    'Position',
+                                                    context.l10n.position,
                                                     style:
                                                         normalMediumBalckText,
                                                   ),
                                                 ),
                                               ),
-                                              VerticalDivider(
+                                              const VerticalDivider(
                                                 color: Colors.grey,
                                                 thickness: 1,
                                               ),
@@ -412,7 +409,7 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                    
                                       Container(
                                         width: double.infinity,
-                                        decoration: BoxDecoration(
+                                        decoration: const BoxDecoration(
                                           shape:
                                               BoxShape.rectangle, //0xff437C17
                                           //  color: Color(0xff018506), //0xff518dd3  Color(0xff5a8bce)   387C44
@@ -430,24 +427,24 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                           padding: const EdgeInsets.all(
                                               8.0), //0xff4682B4
                                           child: Text(
-                                            'Gross Salary',
+                                            context.l10n.grossSalary,
                                             style: boldLargeWhiteText,
                                           ),
                                         ),
                                       ),
                                       for (var i
                                           in paySlipModel!.payLineList) ...[
-                                        if ((i['category_name'] == 'Basic' ||
+                                        if ((i['category_name'] == context.l10n.basic ||
                                                 i['category_name'] ==
-                                                    'Hourly Rate' ||
+                                                    context.l10n.hourlyRate ||
                                                 i['category_name'] ==
-                                                    'Allowance' ||
+                                                    context.l10n.allowance ||
                                                 i['category_name'] ==
-                                                    'Daily Rate') &&
+                                                    context.l10n.dailyRate) &&
                                             i['total'] > 0) ...[
                                           Container(
                                             width: double.infinity,
-                                            decoration: BoxDecoration(
+                                            decoration: const BoxDecoration(
                                               shape: BoxShape.rectangle,
                                               border: Border(
                                                   bottom: BorderSide(
@@ -476,7 +473,7 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                                       ),
                                                     ),
                                                   ),
-                                                  VerticalDivider(
+                                                  const VerticalDivider(
                                                     color: Colors.grey,
                                                     thickness: 1,
                                                   ),
@@ -510,7 +507,7 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                       ],
                                       Container(
                                         width: double.infinity,
-                                        decoration: BoxDecoration(
+                                        decoration: const BoxDecoration(
                                           shape: BoxShape.rectangle,
                                           border: Border(
                                               bottom: BorderSide(
@@ -530,12 +527,12 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                                   padding:
                                                       const EdgeInsets.all(8.0),
                                                   child: Text(
-                                                    'Gross Earning',
+                                                    context.l10n.grossEarning,
                                                     style: boldMediumBlackText,
                                                   ),
                                                 ),
                                               ),
-                                              VerticalDivider(
+                                              const VerticalDivider(
                                                 color: Colors.grey,
                                                 thickness: 1,
                                               ),
@@ -558,7 +555,7 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                       ),
                                       Container(
                                         width: double.infinity,
-                                        decoration: BoxDecoration(
+                                        decoration: const BoxDecoration(
                                           shape: BoxShape.rectangle,
                                           color: Color.fromARGB(255, 175, 4,
                                               4), //0xff4682B4  0xfffa81811
@@ -574,20 +571,20 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                         child: Padding(
                                           padding: const EdgeInsets.all(8.0),
                                           child: Text(
-                                            'Deduction',
+                                            context.l10n.deduction,
                                             style: boldLargeWhiteText,
                                           ),
                                         ),
                                       ),
                                       for (var i
                                           in paySlipModel!.payLineList) ...[
-                                        if (i['category_name'] == 'Deduction' &&
+                                        if (i['category_name'] == context.l10n.deduction &&
                                             double.parse(
                                                     i['amount'].toString()) >
                                                 0) ...[
                                           Container(
                                             width: double.infinity,
-                                            decoration: BoxDecoration(
+                                            decoration: const BoxDecoration(
                                               shape: BoxShape.rectangle,
                                               border: Border(
                                                   bottom: BorderSide(
@@ -616,7 +613,7 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                                       ),
                                                     ),
                                                   ),
-                                                  VerticalDivider(
+                                                  const VerticalDivider(
                                                     color: Colors.grey,
                                                     thickness: 1,
                                                   ),
@@ -650,7 +647,7 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                       ],
                                       Container(
                                         width: double.infinity,
-                                        decoration: BoxDecoration(
+                                        decoration: const BoxDecoration(
                                           shape: BoxShape.rectangle,
                                           border: Border(
                                               bottom: BorderSide(
@@ -670,12 +667,12 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                                   padding:
                                                       const EdgeInsets.all(8.0),
                                                   child: Text(
-                                                    'Gross Deduction',
+                                                    context.l10n.grossDeduction,
                                                     style: boldMediumBlackText,
                                                   ),
                                                 ),
                                               ),
-                                              VerticalDivider(
+                                              const VerticalDivider(
                                                 color: Colors.grey,
                                                 thickness: 1,
                                               ),
@@ -703,7 +700,7 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                         decoration: BoxDecoration(
                                           shape: BoxShape.rectangle,
                                           color: Colors.grey[300],
-                                          border: Border(
+                                          border: const Border(
                                               bottom: BorderSide(
                                                   width: 1, color: Colors.grey),
                                               left: BorderSide(
@@ -721,12 +718,12 @@ class _PaySlipScreenState extends State<PaySlipScreen> {
                                                   padding:
                                                       const EdgeInsets.all(8.0),
                                                   child: Text(
-                                                    'Net Amount',
+                                                    context.l10n.netAmount,
                                                     style: boldLargeBlackText,
                                                   ),
                                                 ),
                                               ),
-                                              VerticalDivider(
+                                              const VerticalDivider(
                                                 color: Colors.grey,
                                                 thickness: 1,
                                               ),

@@ -9,36 +9,30 @@ class AttachmentDao {
   final dbProvider = DatabaseProvider.db;
 
   Future<List<Attachment>> getAttachmentList() async {
-    print('getAttachmentList------------------------'); //To Remove log
     var db = await dbProvider.database;
     var result =
         await db!.rawQuery("SELECT * FROM attachment ORDER BY id DESC");
     List<Attachment> list = result.isNotEmpty
         ? result.map((u) => Attachment.fromJson(u)).toList()
         : [];
-    print('result ${result.toList()}'); //To Remove log
     return list;
   }
 
     Future<List<Attachment>> getAttachmentListById(int id) async {
-    print('getAttachmentListById------------------------'); //To Remove log
     var db = await dbProvider.database;
     var result =
         await db!.rawQuery("SELECT * FROM attachment  WHERE attachmentId = $id ORDER BY id DESC");
     List<Attachment> list = result.isNotEmpty
         ? result.map((u) => Attachment.fromJson(u)).toList()
         : [];
-    print('result ${result.toList()}'); //To Remove log
     return list;
   }
   
   Future<Attachment> getSingleAttachmentById(int id) async {
-    print('getSingleAttachment------ $id'); //To Remove log
     var db = await dbProvider.database;
     List<Map<String, Object?>> result;
     result = await db!.rawQuery("SELECT * FROM attachment WHERE attachmentId = $id");
 
-    print('result ${result.toList()}'); //To Remove log
     if (result.isEmpty) {
       throw StateError('No attachment found with id $id');
     }
@@ -47,7 +41,6 @@ class AttachmentDao {
   }
 
   Future insertAttachment(List<Attachment> attachmentList) async {
-    print('insertAttachment-----$attachmentList'); //To Remove log
 
     final db = await dbProvider.database;
     Batch batch = db!.batch();
@@ -61,15 +54,12 @@ class AttachmentDao {
   }
 
   insertSingleAttachment(Attachment attachment) async {
-    print('insertSingleAttachment------------- $Attachment'); //To Remove log
     final db = await dbProvider.database;
     final result = await db!.insert("attachment", attachment.toJson());
-    print('result----------- $result'); //To Remove log
     return result;
   }
 
   updateAttachment(Attachment attachment) async {
-    print('updateAttachment------${attachment.toJson()}'); //To Remove log
     Database? db = await dbProvider.database;
     final result = await db!.update(
       'attachment',
@@ -77,15 +67,12 @@ class AttachmentDao {
       where: "id = ?",
       whereArgs: [attachment.id],
     );
-    print("result******* $result"); //To Remove log
     return result;
   }
 
   Future<int> deleteAttachmentRecords() async {
-    print('deleteAttachmentRecords-----------');
     Database? db = await dbProvider.database;
     var result = db!.rawDelete('Delete from attachment');
-    print('result-----$result');
     return result;
   }
 }

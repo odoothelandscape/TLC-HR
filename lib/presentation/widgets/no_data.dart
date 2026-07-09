@@ -1,41 +1,40 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:easy_localization/easy_localization.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
-Widget noDataWidget() {
+Widget noDataWidget(BuildContext context) {
   return Center(
       child: Padding(
-    padding: EdgeInsets.all(15),
+    padding: const EdgeInsets.all(15),
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        Image(
+        const Image(
           image: AssetImage('assets/imgs/ic_empty_data.png'),
           width: 250,
           height: 250,
         ),
         Text(
-          "No Data",
+          context.l10n.noData,
           textAlign: TextAlign.center,
           style: TextStyle(
               fontSize: 25,
               color: Colors.red[300],
               fontWeight: FontWeight.bold),
         ),
-        SizedBox(
+        const SizedBox(
           height: 10,
         ),
         Text(
-          "No data found, please try again later.",
+          context.l10n.noDataFound,
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 16, color: Colors.grey[500]),
         ),
-        SizedBox(
+        const SizedBox(
           height: 8,
         ),
         Text(
-          'Refresh the page or check your internet connection.',
+          context.l10n.refreshOrCheckInternet,
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 16, color: Colors.grey),
         ),

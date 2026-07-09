@@ -7,12 +7,10 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:talent_hr/data/database/dao/attachment_dao.dart';
 import 'package:talent_hr/data/database/dao/leave_dao.dart';
-import 'package:talent_hr/presentation/screens/leave/leave_dashboard.dart';
-import 'package:talent_hr/utility/style/theme.dart' as Style;
+import 'package:talent_hr/utility/style/theme.dart' as style;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../data/api/leave_api.dart';
 import '../../../data/database/dao/employee_dao.dart';
-import '../../../data/helper/constant.dart';
 import '../../../data/models/employee/employee.dart';
 import '../../../data/models/leave/leave.dart';
 import '../../../utility/style/theme.dart';
@@ -22,8 +20,12 @@ import '../../widgets/no_data.dart';
 import '../dashboard/dashboard_main.dart';
 import 'leave_detail_screen.dart';
 import 'leave_request_screen.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
 class LeaveHistoryListScreen extends StatefulWidget {
+  const LeaveHistoryListScreen({super.key});
+
+  @override
   _LeaveHistoryListScreenState createState() => _LeaveHistoryListScreenState();
 }
 
@@ -51,6 +53,7 @@ class _LeaveHistoryListScreenState extends State<LeaveHistoryListScreen> {
   bool doneRefresh = false;
   ValueNotifier<bool> isDialOpen = ValueNotifier(false);
 
+  @override
   initState() {
     super.initState();
     toast = FToast();
@@ -78,9 +81,10 @@ class _LeaveHistoryListScreenState extends State<LeaveHistoryListScreen> {
 
   Future bindData() async {
     bool checkInternet = await InternetConnectionChecker().hasConnection;
+    if (!mounted) return;
     if (checkInternet == false) {
       if (!mounted) return;
-      showDialog(context: context, builder: (_) => CustomEventDialog());
+      showDialog(context: context, builder: (_) => const CustomEventDialog());
       return;
     }
     leaveList = [];
@@ -88,7 +92,6 @@ class _LeaveHistoryListScreenState extends State<LeaveHistoryListScreen> {
     leaveList = [];
     leaveList = await leaveDao.getLeaveList();
 
-    print('leave list 2--------${leaveList.length}');
 
     if (leaveList.isEmpty) {
       noMoreToShow = true;
@@ -101,17 +104,19 @@ class _LeaveHistoryListScreenState extends State<LeaveHistoryListScreen> {
     setState(() {});
   }
 
+  @override
   void dispose() {
     super.dispose();
   }
 
-  Future<Null> refreshList() async {
+  Future<void> refreshList() async {
     bool checkInternet = await InternetConnectionChecker().hasConnection;
+    if (!mounted) return;
     if (checkInternet == false) {
-      showDialog(context: context, builder: (_) => CustomEventDialog());
+      showDialog(context: context, builder: (_) => const CustomEventDialog());
       return;
     }
-    EasyLoading.show(status: 'Fetching data...........');
+    EasyLoading.show(status: context.l10n.fetchingData);
     doneRefresh = true;
     setState(() {});
 
@@ -121,6 +126,7 @@ class _LeaveHistoryListScreenState extends State<LeaveHistoryListScreen> {
     setState(() {});
   }
 
+  @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
@@ -130,7 +136,7 @@ class _LeaveHistoryListScreenState extends State<LeaveHistoryListScreen> {
         }
         Navigator.pushAndRemoveUntil(context,
             MaterialPageRoute(builder: (BuildContext context) {
-          return HomeScreen();
+          return const HomeScreen();
         }), (r) {
           return false;
         });
@@ -140,20 +146,20 @@ class _LeaveHistoryListScreenState extends State<LeaveHistoryListScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Style.ColorObj.mainColor,
+          backgroundColor: style.ColorObj.mainColor,
           title: Text(
-            'My Leave History',
-            style: Style.appBarTitleStyle,
+            context.l10n.myLeaveHistory,
+            style: style.appBarTitleStyle,
           ),
           leading: InkWell(
               onTap: () {
                 Navigator.pushReplacement(context,
                     MaterialPageRoute(builder: (context) {
-                  return HomeScreen();
+                  return const HomeScreen();
                 }));
               },
-              child: Padding(
-                padding: const EdgeInsets.only(right: 10.0),
+              child: const Padding(
+                padding: EdgeInsets.only(right: 10.0),
                 child: Icon(
                   Icons.home,
                   size: 25,
@@ -171,8 +177,8 @@ class _LeaveHistoryListScreenState extends State<LeaveHistoryListScreen> {
                     });
                     refreshList();
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 10.0),
+                  child: const Padding(
+                    padding: EdgeInsets.only(right: 10.0),
                     child: Icon(
                       Icons.refresh,
                       color: Colors.white,
@@ -181,7 +187,7 @@ class _LeaveHistoryListScreenState extends State<LeaveHistoryListScreen> {
             )
           ],
         ),
-        body: leaveList.length > 0
+        body: leaveList.isNotEmpty
             ? ListView.builder(
                 itemCount: leaveList.length,
                 shrinkWrap: true,
@@ -189,7 +195,6 @@ class _LeaveHistoryListScreenState extends State<LeaveHistoryListScreen> {
                 itemBuilder: (_, index) {
                   Leave leave = leaveList[index];
 
-                  print('leave-------${leave.toJson()}');
                   String state = '';
                   String duration =
                       '${leave.number_of_days} days(s) (${leave.date_from} ~ ${leave.date_to})';
@@ -197,31 +202,31 @@ class _LeaveHistoryListScreenState extends State<LeaveHistoryListScreen> {
                   Color? textColor;
 
                   if (leave.state == "draft") {
-                    state = 'To Confirm';
+                    state = context.l10n.toConfirm;
 
                     stateColor = Colors.grey[300];
                     textColor = Colors.grey[800];
                   } else if (leave.state == "confirm") {
-                    state = 'To Approve';
+                    state = context.l10n.toApprove;
 
                     stateColor = Colors.orange;
                     textColor = Colors.white;
                   } else if (leave.state == "validate1") {
-                    state = 'Second Approval';
+                    state = context.l10n.secondApproval;
 
                     stateColor = Colors.cyan;
                     textColor = Colors.white;
                   } else if (leave.state == "validate") {
-                    state = 'Approved';
+                    state = context.l10n.approved;
 
                     stateColor = Colors.green;
                     textColor = Colors.white;
                   } else if (leave.state == "cancel") {
-                    state = "Cancelled";
+                    state = context.l10n.cancelled;
                     stateColor = Colors.red;
                     textColor = Colors.white;
                   } else if (leave.state == "refuse") {
-                    state = "Refused";
+                    state = context.l10n.refused;
                     stateColor = Colors.red;
                     textColor = Colors.white;
                   }
@@ -244,13 +249,13 @@ class _LeaveHistoryListScreenState extends State<LeaveHistoryListScreen> {
                 },
               )
             : noMoreToShow
-                ? noDataWidget()
+                ? noDataWidget(context)
                 : Center(
                     child: Container(
-                    child: CircularProgressIndicator(),
+                    child: const CircularProgressIndicator(),
                   )),
         bottomNavigationBar: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             border: Border(
               top: BorderSide(
                 color: Colors.grey,
@@ -261,13 +266,13 @@ class _LeaveHistoryListScreenState extends State<LeaveHistoryListScreen> {
           alignment: Alignment.center,
           height: 25,
           width: double.infinity,
-          child: leaveList.length > 0
+          child: leaveList.isNotEmpty
               ? Text(
                   '${leaveList.length} records found',
                   style: normalMediumGreyText,
                 )
               : Text(
-                  '0 records found',
+                  context.l10n.noRecordsFound,
                   style: normalMediumGreyText,
                 ),
         ),
@@ -277,15 +282,15 @@ class _LeaveHistoryListScreenState extends State<LeaveHistoryListScreen> {
           children: [
             SpeedDialChild(
                 backgroundColor: ColorObj.mainColor,
-                child: Icon(
+                child: const Icon(
                   MdiIcons.calendarAccount,
                   color: Colors.white,
                 ),
-                label: 'New Leave Request',
+                label: context.l10n.newLeaveRequest,
                 onTap: () => Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                        builder: (builder) => LeaveRequestScreen()))),
+                        builder: (builder) => const LeaveRequestScreen()))),
 
           
           ],
@@ -303,7 +308,7 @@ class LeaveRequestCard extends StatelessWidget {
   final String status;
   final Color statusColor;
 
-  LeaveRequestCard({
+  const LeaveRequestCard({super.key, 
     required this.date,
     required this.day,
     required this.reason,
@@ -320,7 +325,7 @@ class LeaveRequestCard extends StatelessWidget {
 
     var month = format.format(dateTime1);
    return Card(
-      margin: EdgeInsets.all(8.0),
+      margin: const EdgeInsets.all(8.0),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
@@ -331,7 +336,7 @@ class LeaveRequestCard extends StatelessWidget {
                 Container(
                   width: 60, // Adjust width as needed
                   height: 20, // Adjust height as needed
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Color.fromARGB(255, 97, 96, 96), // Darker grey for the month
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(8.0),
@@ -341,7 +346,7 @@ class LeaveRequestCard extends StatelessWidget {
                   child: Center(
                     child: Text(
                       month,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                         color: Colors.white, // Month text in white
@@ -354,7 +359,7 @@ class LeaveRequestCard extends StatelessWidget {
                   height: 30, // Adjust height as needed
                   decoration: BoxDecoration(
                     color: Colors.grey[200], // Lighter grey for the day
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(8.0),
                       bottomRight: Radius.circular(8.0),
                     ),
@@ -362,7 +367,7 @@ class LeaveRequestCard extends StatelessWidget {
                   child: Center(
                     child: Text(
                       day,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 20,
                       ),
@@ -371,25 +376,25 @@ class LeaveRequestCard extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(width: 16),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     reason,
-                    style: TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 16),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
                       Text(
                         leaveType,
-                        style: TextStyle(fontSize: 14,color: Colors.grey),
+                        style: const TextStyle(fontSize: 14,color: Colors.grey),
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: statusColor.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(8),

@@ -5,12 +5,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
-import 'dart:convert' as convert;
-import 'package:encrypt/encrypt.dart' as encrypt;
 
 class DatabaseProvider with ChangeNotifier {
   static Database? _database;
-  final int _dbversion = 2;
+  final int _dbversion = 4;
   static final DatabaseProvider db = DatabaseProvider._();
   DatabaseProvider._();
 
@@ -45,6 +43,27 @@ class DatabaseProvider with ChangeNotifier {
         await db.execute(
             'ALTER TABLE attendance ADD COLUMN work_mode TEXT');
       } catch (_) {}
+    }
+    if (oldVersion < 3) {
+      // v2 → v3: add accuracy column for GPS precision tracking
+      try {
+        await db.execute(
+            'ALTER TABLE attendance ADD COLUMN accuracy DOUBLE');
+      } catch (_) {}
+    }
+    if (oldVersion < 4) {
+      // v3 → v4: work-from-outside mode + addresses + auto checkout flag
+      for (final col in [
+        'check_in_mode TEXT',
+        'check_out_mode TEXT',
+        'check_in_address TEXT',
+        'check_out_address TEXT',
+        'is_auto_checkout INTEGER',
+      ]) {
+        try {
+          await db.execute('ALTER TABLE attendance ADD COLUMN $col');
+        } catch (_) {}
+      }
     }
   }
 
@@ -143,7 +162,13 @@ class DatabaseProvider with ChangeNotifier {
         'att_type TEXT,'
         'checkInSelfie TEXT,'
         'checkOutSelfie TEXT,'
-        'work_mode TEXT)');
+        'work_mode TEXT,'
+        'accuracy DOUBLE,'
+        'check_in_mode TEXT,'
+        'check_out_mode TEXT,'
+        'check_in_address TEXT,'
+        'check_out_address TEXT,'
+        'is_auto_checkout INTEGER)');
 
     await db.execute('CREATE TABLE leaveReason('
         'id INTEGER PRIMARY KEY AUTOINCREMENT,'
@@ -267,7 +292,6 @@ class DatabaseProvider with ChangeNotifier {
   }
 
   Future<void> cleanDatabase() async {
-    print('clean database---');
     try {
       final db = await database;
       await db!.transaction((txn) async {
@@ -286,7 +310,6 @@ class DatabaseProvider with ChangeNotifier {
   }
 
   Future<void> cleanDatabase2() async {
-    print('clean database---');
     try {
       final db = await database;
       await db!.transaction((txn) async {
@@ -330,10 +353,9 @@ class DatabaseProvider with ChangeNotifier {
       final path = join(documentsDirectory.path, 'talent_hr.db');
       deleteDatabase(path);
     } catch (e) {
-      print(e.toString()); //To Remove log
+      // ignore: best-effort delete; DB may not exist yet
     }
 
-    print('db is deleted'); //To Remove log
   }
 
   List<String> tables = [];

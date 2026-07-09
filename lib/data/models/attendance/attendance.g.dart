@@ -31,6 +31,12 @@ Attendance _$AttendanceFromJson(Map<String, dynamic> json) => Attendance(
       json['checkOutSelfie'] as String?,
       id: json['id'] as int?,
       work_mode: json['work_mode'] as String?,
+      accuracy: (json['accuracy'] as num?)?.toDouble(),
+      check_in_mode: json['check_in_mode'] as String?,
+      check_out_mode: json['check_out_mode'] as String?,
+      check_in_address: json['check_in_address'] as String?,
+      check_out_address: json['check_out_address'] as String?,
+      is_auto_checkout: json['is_auto_checkout'] as int?,
     );
 
 Map<String, dynamic> _$AttendanceToJson(Attendance instance) =>
@@ -59,4 +65,10 @@ Map<String, dynamic> _$AttendanceToJson(Attendance instance) =>
       'checkInSelfie': instance.checkInSelfie,
       'checkOutSelfie': instance.checkOutSelfie,
       'work_mode': instance.work_mode,
+      'accuracy': instance.accuracy,
+      'check_in_mode': instance.check_in_mode,
+      'check_out_mode': instance.check_out_mode,
+      'check_in_address': instance.check_in_address,
+      'check_out_address': instance.check_out_address,
+      'is_auto_checkout': instance.is_auto_checkout,
     };

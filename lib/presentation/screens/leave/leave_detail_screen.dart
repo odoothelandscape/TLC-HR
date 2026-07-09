@@ -7,18 +7,19 @@ import 'package:talent_hr/data/database/dao/employee_dao.dart';
 import 'package:talent_hr/data/database/dao/leave_dao.dart';
 import 'package:talent_hr/data/database/dao/leave_reason_dao.dart';
 import 'package:talent_hr/presentation/screens/leave/leave_history_list_screen.dart';
-import 'package:talent_hr/utility/style/theme.dart' as Style;
+import 'package:talent_hr/utility/style/theme.dart' as style;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../data/models/attachment/attachment.dart';
 import '../../../data/models/employee/employee.dart';
 import '../../../data/models/leave/leave.dart';
 import '../../../data/models/leave_reason/leave_reason.dart';
-import 'package:easy_localization/easy_localization.dart';
 import '../../../utility/style/theme.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
 class LeaveDetailScreen extends StatefulWidget {
-  Leave leave;
-  LeaveDetailScreen(this.leave);
+  final Leave leave;
+  const LeaveDetailScreen(this.leave, {super.key});
+  @override
   _LeaveDetailScreenState createState() => _LeaveDetailScreenState(leave);
 }
 
@@ -54,46 +55,57 @@ class _LeaveDetailScreenState extends State<LeaveDetailScreen> {
 
   _LeaveDetailScreenState(this.leave);
 
+  @override
   initState() {
     super.initState();
     toast = FToast();
     toast!.init(context);
-    _loadData();
   }
 
-   void dispose() {
+  bool _inited = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_inited) {
+      _inited = true;
+      _loadData();
+    }
+  }
+
+   @override
+  void dispose() {
    
     super.dispose();
   }
 
   _loadData() async {
-    print('leave-----------${widget.leave.toJson()}');
     if (leave.state == "draft") {
-      state = 'To Confirm';
+      state = context.l10n.toConfirm;
 
       stateColor = Colors.grey[300];
       textColor = Colors.grey[800];
     } else if (leave.state == "confirm") {
-      state = 'To Approve';
+      state = context.l10n.toApprove;
 
       stateColor = Colors.orange;
       textColor = Colors.white;
     } else if (leave.state == "validate1") {
-      state = 'Second Approval';
+      state = context.l10n.secondApproval;
 
       stateColor = Colors.cyan;
       textColor = Colors.white;
     } else if (leave.state == "validate") {
-      state = 'Approved';
+      state = context.l10n.approved;
 
       stateColor = Colors.green;
       textColor = Colors.white;
     } else if (leave.state == "cancel") {
-      state = "Cancelled";
+      state = context.l10n.cancelled;
       stateColor = Colors.red;
       textColor = Colors.white;
     } else if (leave.state == "refuse") {
-      state = "Refused";
+      state = context.l10n.refused;
       stateColor = Colors.red;
       textColor = Colors.white;
     }
@@ -105,6 +117,7 @@ class _LeaveDetailScreenState extends State<LeaveDetailScreen> {
     employee = await employeeDao.getSingleEmployeeById(uid);
   }
 
+  @override
   Widget build(BuildContext context) {
     //SizeConfig().init(context);
 
@@ -112,23 +125,23 @@ class _LeaveDetailScreenState extends State<LeaveDetailScreen> {
       onWillPop: () async {
         await Navigator.of(context)
             .pushReplacement(MaterialPageRoute(builder: (context) {
-          return LeaveHistoryListScreen();
+          return const LeaveHistoryListScreen();
         }));
         return false;
       },
       child: Scaffold(
         appBar: AppBar(
-            backgroundColor: Style.ColorObj.mainColor,
-            title: Text('Leave History Detail'),
+            backgroundColor: style.ColorObj.mainColor,
+            title: Text(context.l10n.leaveHistoryDetail),
             leading: InkWell(
                 onTap: () async {
                   await Navigator.of(context)
                       .pushReplacement(MaterialPageRoute(builder: (context) {
-                    return LeaveHistoryListScreen();
+                    return const LeaveHistoryListScreen();
                   }));
                 },
                 child: Container(
-                    child: Icon(
+                    child: const Icon(
                   Icons.arrow_back,
                   color: Colors.white,
                 )))),
@@ -143,7 +156,7 @@ class _LeaveDetailScreenState extends State<LeaveDetailScreen> {
                   elevation: 2,
                   shadowColor: Colors.blue,
                   child: Padding(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     child: Column(
                       children: <Widget>[
                         Row(
@@ -153,10 +166,10 @@ class _LeaveDetailScreenState extends State<LeaveDetailScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Text(
-                                  'Type',
+                                  context.l10n.type,
                                   style: normalMediumGreyText,
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 15,
                                 ),
                                 Text(
@@ -169,7 +182,7 @@ class _LeaveDetailScreenState extends State<LeaveDetailScreen> {
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: <Widget>[
                                 Container(
-                                  padding: EdgeInsets.symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                       horizontal: 7, vertical: 1),
                                   height: 20,
                                   decoration: BoxDecoration(
@@ -189,29 +202,29 @@ class _LeaveDetailScreenState extends State<LeaveDetailScreen> {
                             )
                           ],
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 20,
                         ),
                         Row(
                           children: <Widget>[
-                            Icon(
+                            const Icon(
                               MdiIcons.alarm,
                               size: 65,
-                              color: Style.ColorObj.mainColor,
+                              color: style.ColorObj.mainColor,
                             ),
-                            SizedBox(
+                            const SizedBox(
                               width: 14,
                             ),
                             Expanded(
                               child: Text(
                                 leave.write_date!.substring(0, 10),
-                                style: Style.boldXXLBlueText,
+                                style: style.boldXXLBlueText,
                               ),
                             )
                           ],
                         ),
                         
-                        SizedBox(
+                        const SizedBox(
                           height: 15,
                         ),
                         Row(
@@ -220,7 +233,7 @@ class _LeaveDetailScreenState extends State<LeaveDetailScreen> {
                             Expanded(
                               flex: 1,
                               child: Text(
-                                'Leave Reason',
+                                context.l10n.leaveReason,
                                 style: normalLargeGreyText,
                               ),
                             ),
@@ -235,7 +248,7 @@ class _LeaveDetailScreenState extends State<LeaveDetailScreen> {
                             ),
                           ],
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 15,
                         ),
                         Row(
@@ -244,7 +257,7 @@ class _LeaveDetailScreenState extends State<LeaveDetailScreen> {
                             Expanded(
                               flex: 1,
                               child: Text(
-                                'Duration',
+                                context.l10n.duration,
                                 style: normalLargeGreyText,
                               ),
                             ),
@@ -257,7 +270,7 @@ class _LeaveDetailScreenState extends State<LeaveDetailScreen> {
                             ),
                           ],
                         ),
-                        Spacer(),
+                        const Spacer(),
                       ],
                     ),
                   ),

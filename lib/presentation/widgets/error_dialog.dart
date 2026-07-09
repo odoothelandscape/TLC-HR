@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../../utility/style/theme.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
 
 class ErrorDialog extends StatelessWidget {
-  String title;
-  Widget content;
-  IconData icon;
-  ErrorDialog({ Key? key, required this.title,required this.content,required this.icon }) : super(key: key);
+  final String title;
+  final Widget content;
+  final IconData icon;
+  const ErrorDialog({ Key? key, required this.title,required this.content,required this.icon }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +54,7 @@ class ErrorDialog extends StatelessWidget {
                 ),
                  ElevatedButton(style: ButtonStyle(backgroundColor: MaterialStateProperty.all(
                   ColorObj.mainColor
-                  )), onPressed: (){Navigator.pop(context);}, child: const Text("Ok"))
+                  )), onPressed: (){Navigator.pop(context);}, child: Text(context.l10n.ok))
               ],
             ),
           ),

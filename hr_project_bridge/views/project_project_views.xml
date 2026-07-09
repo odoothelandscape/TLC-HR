@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         COST-AWARE TREE — opened from Department smart button
+         Columns: Project | Manager | Employees | Estimated | Actual | Used% | Health
+    ════════════════════════════════════════════════════════════════════════ -->
+    <record id="view_project_tree_department_cost" model="ir.ui.view">
+        <field name="name">project.project.tree.department.cost</field>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <tree string="Department Projects"
+                  decoration-danger="budget_health == 'critical'"
+                  decoration-warning="budget_health == 'warning'">
+                <field name="name" string="Project"/>
+                <field name="user_id" string="Manager" optional="show"/>
+                <field name="department_id" column_invisible="1"/>
+                <field name="employee_count" string="Employees"/>
+                <field name="total_estimated_cost"
+                       string="Budget Lines Total"
+                       optional="show"
+                       sum="Total Estimated"/>
+                <field name="initial_estimate_cost"
+                       string="Initial Estimate"
+                       optional="show"
+                       sum="Total Initial Estimate"/>
+                <field name="current_total_cost"
+                       string="Actual Cost"
+                       sum="Total Actual Cost"/>
+                <field name="budget_variance"
+                       string="Used %"
+                       widget="progressbar"
+                       options="{'editable': false, 'max_value': 100}"/>
+                <field name="budget_remaining"
+                       string="Remaining"
+                       optional="show"/>
+                <field name="budget_health"
+                       widget="badge"
+                       decoration-success="budget_health == 'healthy'"
+                       decoration-warning="budget_health == 'warning'"
+                       decoration-danger="budget_health == 'critical'"
+                       decoration-muted="budget_health == 'no_budget'"/>
+                <field name="currency_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PROJECT FORM — inherit to add:
+           1. Smart button (employee count)
+           2. Department field
+           3. "Employee Costs" tab with budget panel + editable employee tree
+    ════════════════════════════════════════════════════════════════════════ -->
+    <record id="view_project_form_inherit_hr_bridge" model="ir.ui.view">
+        <field name="name">project.project.form.inherit.hr.bridge</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+
+            <!-- ── Smart button ── -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_project_employees"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-users">
+                    <field name="employee_count"
+                           widget="statinfo"
+                           string="Employees"/>
+                </button>
+            </xpath>
+
+            <!-- ── Department field (placed after Project Manager) ── -->
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="department_id"
+                       options="{'no_create': True}"
+                       placeholder="Select department..."/>
+            </xpath>
+
+            <!-- ── Employee Costs tab (before Settings) ── -->
+            <xpath expr="//page[@name='settings']" position="before">
+                <page string="Employee Costs" name="employee_costs">
+
+                    <!-- Budget summary: 4 KPI boxes -->
+                    <div class="row mb-3 mt-2 g-2">
+
+                        <div class="col-12 col-md-3">
+                            <div class="card h-100 border-primary">
+                                <div class="card-body text-center py-2">
+                                    <div class="text-muted small fw-semibold mb-1">
+                                        Initial Estimate
+                                    </div>
+                                    <field name="initial_estimate_cost"
+                                           widget="monetary"
+                                           class="h5 mb-0 text-primary fw-bold"/>
+                                    <div class="text-muted small mt-1">
+                                        Top-down budget
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-3">
+                            <div class="card h-100 border-secondary">
+                                <div class="card-body text-center py-2">
+                                    <div class="text-muted small fw-semibold mb-1">
+                                        Budget Lines Total
+                                    </div>
+                                    <field name="total_estimated_cost"
+                                           widget="monetary"
+                                           readonly="1"
+                                           class="h5 mb-0 fw-bold"/>
+                                    <div class="text-muted small mt-1">
+                                        Sum of linked budget lines
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center py-2">
+                                    <div class="text-muted small fw-semibold mb-1">
+                                        Total Actual Cost
+                                    </div>
+                                    <field name="current_total_cost"
+                                           widget="monetary"
+                                           readonly="1"
+                                           class="h5 mb-0 fw-bold"/>
+                                    <div class="text-muted small mt-1">
+                                        From payroll + accounting
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center py-2">
+                                    <div class="text-muted small fw-semibold mb-1">
+                                        Budget Health
+                                    </div>
+                                    <field name="budget_health"
+                                           widget="badge"
+                                           readonly="1"
+                                           decoration-success="budget_health == 'healthy'"
+                                           decoration-warning="budget_health == 'warning'"
+                                           decoration-danger="budget_health == 'critical'"
+                                           decoration-muted="budget_health == 'no_budget'"
+                                           class="fs-6"/>
+                                    <div class="mt-1">
+                                        <field name="budget_variance"
+                                               readonly="1"
+                                               class="small fw-semibold"/>
+                                        <span class="small text-muted">% used</span>
+                                    </div>
+                                    <div class="text-muted small">
+                                        Remaining:
+                                        <field name="budget_remaining"
+                                               widget="monetary"
+                                               readonly="1"
+                                               class="small"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Refresh button -->
+                    <div class="mb-2 d-flex justify-content-end">
+                        <button name="action_refresh_all_costs"
+                                type="object"
+                                string="↻  Refresh Costs"
+                                class="btn btn-sm btn-outline-secondary"
+                                help="Recomputes actual cost from payroll and accounting analytic lines."/>
+                    </div>
+
+                    <!-- Editable employee assignment tree -->
+                    <field name="employee_line_ids" nolabel="1">
+                        <tree editable="bottom"
+                              decoration-danger="cost_status == 'over'"
+                              decoration-warning="cost_status == 'on_track'"
+                              decoration-success="cost_status == 'under'">
+                            <field name="employee_id"/>
+                            <field name="department_id"
+                                   readonly="1"
+                                   optional="show"/>
+                            <field name="analytic_distribution"
+                                   widget="analytic_distribution"
+                                   required="1"/>
+                            <field name="budget_line_id" optional="show"/>
+                            <field name="estimated_cost"
+                                   readonly="1"
+                                   sum="Total Estimated"/>
+                            <field name="current_actual_cost"
+                                   readonly="1"
+                                   sum="Total Actual Cost"/>
+                            <field name="cost_status"
+                                   widget="badge"
+                                   readonly="1"
+                                   decoration-success="cost_status == 'under'"
+                                   decoration-warning="cost_status == 'on_track'"
+                                   decoration-danger="cost_status == 'over'"
+                                   decoration-muted="cost_status == 'no_budget'"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </tree>
+                    </field>
+
+                    <!-- Hidden currency for monetary widgets -->
+                    <field name="currency_id" invisible="1"/>
+
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

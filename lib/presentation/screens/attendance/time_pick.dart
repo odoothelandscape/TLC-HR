@@ -4,11 +4,11 @@ import '../../../utility/style/theme.dart';
 
 
 class TimePickerWidget extends StatefulWidget {
-  String text;
-  Function(DateTime) timePicker;
-  DateTime init;
-  int totalDays;
-  TimePickerWidget({ Key? key,required this.text, required this.timePicker,required this.init, this.totalDays = 0 }) : super(key: key);
+  final String text;
+  final Function(DateTime) timePicker;
+  final DateTime init;
+  final int totalDays;
+  const TimePickerWidget({ Key? key,required this.text, required this.timePicker,required this.init, this.totalDays = 0 }) : super(key: key);
 
   @override
   State<TimePickerWidget> createState() => _TimePickerWidgetState();
@@ -25,7 +25,6 @@ class _TimePickerWidgetState extends State<TimePickerWidget> {
       onTap: ()async{
         time = await showDatePicker(context: context, initialDate: widget.init, firstDate: DateTime(2000), lastDate: DateTime(3000));
         if(time != null){
-          print(time);
           setState(() {
             widget.timePicker(time!);
           });

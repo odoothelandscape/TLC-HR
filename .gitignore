@@ -45,3 +45,30 @@ app.*.map.json
 
 # FVM Version Cache
 .fvm/
+# Sensitive files
+tlc_private.key
+tlc_request.csr
+fix_ios.py
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
+# Duplicate flutter files
+*\ *.podspec
+*\ *.xcconfig
+*\ *.sh
+*\ *.lock
+*.zip
+
+# Odoo files (not Flutter)
+tlc_attendance_control/
+tlc_attendance_control*/
+
+# iOS build
+ios/build/
+ios/Podfile.lock
+ios/Podfile\ *.lock
+ios/ExportOptions.plist
+
+# Flutter duplicates
+.flutter-plugins\ *
+.flutter-plugins-dependencies\ *

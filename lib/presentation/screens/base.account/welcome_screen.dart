@@ -1,6 +1,5 @@
 import 'dart:async';
 //import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:device_info/device_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -10,14 +9,13 @@ import 'package:talent_hr/presentation/screens/base.account/reject_screen.dart';
 import 'package:talent_hr/presentation/screens/base.account/waiting_screen.dart';
 import 'package:talent_hr/presentation/screens/dashboard/dashboard_main.dart';
 // import 'package:progress_indicators/progress_indicators.dart';
-import 'package:talent_hr/utility/style/theme.dart' as Style;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../data/api/login_api.dart';
 import '../../../data/helper/constant.dart';
 import '../../../utility/share/share_component.dart';
-import '../../../utility/utils/alertText.dart';
 import '../../widgets/custom_event_dialog.dart';
 import '../../widgets/widgets.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({Key? key}) : super(key: key);
@@ -70,12 +68,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   gotoNext() async {
-    print('gotoNext-----------');
     bool checkInternet = await InternetConnectionChecker().hasConnection;
-    print('checkInternet--------$checkInternet');
     if (checkInternet == false) {
       if (!mounted) return;
-      showDialog(context: context, builder: (_) => CustomEventDialog());
+      showDialog(context: context, builder: (_) => const CustomEventDialog());
       return;
     }
 
@@ -83,26 +79,23 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       String? token = await pref.getString('jwt_token');
 
       waitingStage = await pref.getString('waitingStage');
-      print('waitingStage-----$waitingStage');
 
       if (waitingStage == null || waitingStage == '') {
-        print('waitingStage 1');
         await pref.setString('waitingStage', 'false');
       }
 
       if (token.toString() != "null" && token != null) {
-        print('waitingStage 2');
         if (waitingStage == 'true') {
           dispose();
           if (!mounted) return;
           Navigator.of(_scaffoldCtx).pushAndRemoveUntil(
               MaterialPageRoute(builder: (BuildContext context) {
-            return WaitingScreen();
+            return const WaitingScreen();
           }), (route) => false);
         } else {
           if (checkInternet == false) {
             if (!mounted) return;
-            showDialog(context: context, builder: (_) => CustomEventDialog());
+            showDialog(context: context, builder: (_) => const CustomEventDialog());
             return;
           }
           checkDeviceActivation();
@@ -111,7 +104,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         if (!mounted) return;
         Navigator.of(_scaffoldCtx).pushAndRemoveUntil(
             MaterialPageRoute(builder: (BuildContext context) {
-          return LoginScreen();
+          return const LoginScreen();
         }), (route) => false);
       }
     });
@@ -136,7 +129,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     var deviceStatus = await shareComponent.readDeviceId();
 
     deviceState = await loginApi.checkDevice(deviceStatus.androidId);
-    print('deviceState--------$deviceState');
     if (deviceState == 'waiting') {
       await pref.setString('waitingStage', 'true');
     } else if (deviceState == 'approve') {
@@ -146,33 +138,33 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       if (!mounted) return;
       Navigator.of(context)
           .pushReplacement(MaterialPageRoute(builder: (BuildContext context) {
-        return HomeScreen();
+        return const HomeScreen();
       }));
     } else if (deviceState == 'reject') {
       if (!mounted) return;
       Navigator.of(context)
           .pushReplacement(MaterialPageRoute(builder: (BuildContext context) {
-        return RejectScreen();
+        return const RejectScreen();
       }));
     } else if (deviceState == 'Invalid cookie.') {
       toast!.showToast(
-        child: Widgets().getErrorToast('Session Expired.Please login again.'),
+        child: Widgets().getErrorToast(context.l10n.sessionExpired),
         gravity: ToastGravity.BOTTOM,
-        toastDuration: Duration(seconds: 3),
+        toastDuration: const Duration(seconds: 3),
       );
       await pref.setString('jwt_token', "null");
-      await Future.delayed(Duration(seconds: 4));
+      await Future.delayed(const Duration(seconds: 4));
       // timer = Timer.periodic(Duration(seconds: 3), (timer) {
       if (!mounted) return;
       Navigator.of(_scaffoldCtx).pushAndRemoveUntil(
           MaterialPageRoute(builder: (BuildContext context) {
-        return LoginScreen();
+        return const LoginScreen();
       }), (route) => false);
     } else {
       toast!.showToast(
         child: Widgets().getErrorToast(deviceState),
         gravity: ToastGravity.BOTTOM,
-        toastDuration: Duration(seconds: 3),
+        toastDuration: const Duration(seconds: 3),
       );
     }
   }
@@ -182,16 +174,16 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     //SizeConfig().init(context);
     _scaffoldCtx = context;
     return Scaffold(
-        body: Container(
+        body: SizedBox(
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Container(
+            SizedBox(
               width: MediaQuery.of(context).size.width,
-              child: Image(
+              child: const Image(
                 width: 70,
                 height: 70,
                 image: AssetImage('assets/logos/ic_hrms.jpg'),

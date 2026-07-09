@@ -1,8 +1,12 @@
 import 'package:http/http.dart' as http;
+import 'package:talent_hr/app/locale_controller.dart';
 import 'package:talent_hr/data/database/dao/attendance_dao.dart';
 import 'package:talent_hr/data/models/attendance/attendance.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+
+/// Odoo sends `false` for empty char fields — normalize to ''.
+String _odooStr(dynamic v) => v is String ? v : '';
 
 class AttendanceAPI {
   var pref;
@@ -26,7 +30,7 @@ class AttendanceAPI {
     List<Map<String, dynamic>> listData = [];
     List<Attendance> attendanceList = [];
 
-    var param = {"domain": "[('employee_id','=',$empId)]", "month": 2};
+    var param = {"domain": "[('employee_id','=',$empId)]", "month": DateTime.now().month};
    
 
     var url = Uri.parse('$urlLink' 'api/get/attendance');
@@ -37,12 +41,22 @@ class AttendanceAPI {
               'Content-Type': 'application/json',
               'cookie': header_cookie,
               'db_name': database,
+            'Accept-Language': await LocaleController.odooLang(),
             },
             body: json.encode(param))
         .then((res) async {
       if (res.statusCode == 200) {
         Map<String, dynamic> result = json.decode(res.body);
-        List list = result['result'];
+        final payload = result['result'];
+        if (payload is! List) {
+          insertResult = payload is Map
+              ? (payload['message'] ??
+                  payload['error'] ??
+                  'Unexpected attendance response')
+              : 'Unexpected attendance response';
+          return;
+        }
+        List list = payload;
      
 
         if (list.isNotEmpty) {
@@ -72,7 +86,12 @@ class AttendanceAPI {
               element['write_date'],
               '',
               '',
-              '');
+              '',
+              check_in_mode: _odooStr(element['check_in_mode']),
+              check_out_mode: _odooStr(element['check_out_mode']),
+              check_in_address: _odooStr(element['check_in_address']),
+              check_out_address: _odooStr(element['check_out_address']),
+              is_auto_checkout: element['is_auto_checkout'] == true ? 1 : 0);
 
           attendanceList.add(attendance);
         }
@@ -108,19 +127,35 @@ class AttendanceAPI {
               'Content-Type': 'application/json',
               'cookie': header_cookie,
               'db_name': database,
+            'Accept-Language': await LocaleController.odooLang(),
             },
             body: json.encode({}))
         .then((res) async {
    
       if (res.statusCode == 200) {
         Map<String, dynamic> result = json.decode(res.body);
-     
-        var distanceTemp = result['result']["records"]['map_distance'];
-        double distance = double.parse(distanceTemp.toString());
-      
-        await pref.setString('attendanceDistance',
-            result['result']["records"]['map_distance'].toString());
-       
+
+        final records = result['result']["records"];
+
+        // Backward-compatible single value (employee override > company).
+        await pref.setString(
+            'attendanceDistance', records['map_distance'].toString());
+
+        // New contract: backend sends per-location effective_distance
+        // (already resolved: employee override > allowed_area > global).
+        final locations = records['locations'];
+        if (locations is List) {
+          await pref.setString('attendance_locations', json.encode(locations));
+        } else {
+          await pref.remove('attendance_locations');
+        }
+
+        // Freshest allowed work mode — backend v19.0.3.4 returns it here too;
+        // used to gate the Remote/Field/Outside buttons before check-in.
+        final settingMode = records['mobile_work_mode'];
+        if (settingMode is String && settingMode.isNotEmpty) {
+          await pref.setString('mobile_work_mode_setting', settingMode);
+        }
       } else {
         insertResult = 'Something Wrong';
       }
@@ -159,12 +194,22 @@ class AttendanceAPI {
               'Content-Type': 'application/json',
               'cookie': header_cookie,
               'db_name': database,
+            'Accept-Language': await LocaleController.odooLang(),
             },
             body: json.encode(param))
         .then((res) async {
       if (res.statusCode == 200) {
         Map<String, dynamic> result = json.decode(res.body);
-        List list = result['result'];
+        final payload = result['result'];
+        if (payload is! List) {
+          insertResult = payload is Map
+              ? (payload['message'] ??
+                  payload['error'] ??
+                  'Unexpected attendance response')
+              : 'Unexpected attendance response';
+          return;
+        }
+        List list = payload;
         if (list.isNotEmpty) {
           await attendanceDao.deleteAttendanceRecords();
         }
@@ -193,7 +238,12 @@ class AttendanceAPI {
               element['write_date'],
               '',
               '',
-              '');
+              '',
+              check_in_mode: _odooStr(element['check_in_mode']),
+              check_out_mode: _odooStr(element['check_out_mode']),
+              check_in_address: _odooStr(element['check_in_address']),
+              check_out_address: _odooStr(element['check_out_address']),
+              is_auto_checkout: element['is_auto_checkout'] == true ? 1 : 0);
 
           attendanceList.add(attendance);
           i++;
@@ -225,6 +275,10 @@ class AttendanceAPI {
       "in_latitude": attendance.in_latitude,
       "in_longitude": attendance.in_longitude,
       "work_mode": attendance.work_mode ?? 'office',
+      "accuracy": attendance.accuracy,
+      // 'outside' skips the backend geofence but still stores coordinates
+      "mode": attendance.check_in_mode ?? 'office',
+      "in_address": attendance.check_in_address ?? '',
     };
     var response = await http
         .post(url,
@@ -233,6 +287,7 @@ class AttendanceAPI {
               'Content-Type': 'application/json',
               'cookie': header_cookie,
               'db_name': database,
+            'Accept-Language': await LocaleController.odooLang(),
           
             },
             body: json.encode(param))
@@ -248,13 +303,15 @@ class AttendanceAPI {
             'attendanceMessage': message,
           };
         } else {
-        
-          var message = result['result']['message'];
+          // Backend rejections (geofence / work-mode restriction) come as
+          // {success: false, message: "..."} — show the server text verbatim.
+          var message =
+              result['result']['message'] ?? result['result']['error'] ?? '';
 
           createResult = {
             'result': 'fail',
             'attendanceId': null,
-            'attendanceMessage': result['result']['message'],
+            'attendanceMessage': message,
           };
         }
       } else {
@@ -292,6 +349,8 @@ class AttendanceAPI {
       "out_latitude": attendance.out_latitude,
       "out_longitude": attendance.out_longitude,
       "work_mode": attendance.work_mode ?? 'office',
+      "mode": attendance.check_out_mode ?? 'office',
+      "out_address": attendance.check_out_address ?? '',
     };
  
 
@@ -302,6 +361,7 @@ class AttendanceAPI {
               'Content-Type': 'application/json',
               'cookie': header_cookie,
               'db_name': database,
+            'Accept-Language': await LocaleController.odooLang(),
            
             },
             body: json.encode(param))
@@ -319,7 +379,10 @@ class AttendanceAPI {
 
         
         } else {
-          var message = result['result']['error'];
+          // Backend rejections come as {success: false, message: "..."} —
+          // older payloads used 'error'; coalesce so the real reason shows.
+          var message =
+              result['result']['message'] ?? result['result']['error'] ?? '';
           updateResult = {
             'result': 'fail',
             'attendanceId': null,

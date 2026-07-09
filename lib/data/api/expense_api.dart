@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -39,6 +40,7 @@ class ExpenseAPI {
       'Accept': 'application/json',
       'Content-type': 'application/json',
       'db_name': database,
+            'Accept-Language': await LocaleController.odooLang(),
       'cookie': header_cookie,
     };
 

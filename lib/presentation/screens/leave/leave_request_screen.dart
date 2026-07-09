@@ -14,7 +14,7 @@ import 'package:talent_hr/data/database/dao/leave_remain.dart';
 import 'package:talent_hr/data/database/dao/leave_type_dao.dart';
 import 'package:talent_hr/data/models/leave_remain/leave_remain.dart';
 import 'package:talent_hr/presentation/screens/leave/leave_history_list_screen.dart';
-import 'package:talent_hr/utility/style/theme.dart' as Style;
+import 'package:talent_hr/utility/style/theme.dart' as style;
 import 'package:file_picker/file_picker.dart';
 import 'package:talent_hr/utility/utils/extension.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,8 +28,12 @@ import '../../../utility/utils/date_util.dart';
 import '../../widgets/custom_event_dialog.dart';
 import '../../widgets/widgets.dart';
 import '../base.account/login.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
 class LeaveRequestScreen extends StatefulWidget {
+  const LeaveRequestScreen({super.key});
+
+  @override
   _LeaveRequestScreenState createState() => _LeaveRequestScreenState();
 }
 
@@ -63,15 +67,16 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   String _selectedEndDate = '';
   late FileType fileType;
   LeaveType? _selectedLeaveType;
-  DateTime _dateTime = DateTime.now();
+  final DateTime _dateTime = DateTime.now();
   LeaveReason? _selectedLeaveReasonType;
   List<LeaveReason> leaveReasonList = [];
   List<LeaveType> leaveTypeList = [];
   List<LeaveRemain> leaveRemainList = [];
-  List<String> dayTypeList = ['Morning', 'Afternoon'];
-  TextEditingController _emergencyController = TextEditingController();
-  TextEditingController _reasonController = TextEditingController();
-  TextEditingController _pendingTaskController = TextEditingController();
+  List<String> get dayTypeList =>
+      [context.l10n.morning, context.l10n.afternoon];
+  final TextEditingController _emergencyController = TextEditingController();
+  final TextEditingController _reasonController = TextEditingController();
+  final TextEditingController _pendingTaskController = TextEditingController();
 
   late final DateTime initDateTime;
   late final DateTime lastDate;
@@ -85,6 +90,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   var year = '';
   String selectedDate = 'Tuesday, Nov 2 2021';
 
+  @override
   initState() {
     super.initState();
     toast = FToast();
@@ -93,6 +99,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     _loadData();
   }
 
+  @override
   void dispose() {
     super.dispose();
   }
@@ -157,9 +164,9 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   List<DropdownMenuItem<LeaveReason>> _addDividersAfterItems(
       List<LeaveReason> items2) {
 
-    List<DropdownMenuItem<LeaveReason>> _menuItems2 = [];
+    List<DropdownMenuItem<LeaveReason>> menuItems2 = [];
     for (var item in items2) {
-      _menuItems2.addAll(
+      menuItems2.addAll(
         [
           DropdownMenuItem<LeaveReason>(
             value: item,
@@ -182,28 +189,28 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         ],
       );
     }
-    return _menuItems2;
+    return menuItems2;
   }
 
   double _getCustomItemsHeights() {
-    double _items2Heights = 0.0;
+    double items2Heights = 0.0;
     for (var i = 0; i <= leaveReasonList.length + 1; i++) {
       if (i.isEven) {
-        _items2Heights = 20;
+        items2Heights = 20;
       }
       if (i.isOdd) {
-        _items2Heights = 0;
+        items2Heights = 0;
       }
     }
-    return _items2Heights;
+    return items2Heights;
   }
 
   List<DropdownMenuItem<LeaveType>> _addDividersAfterItemsForLeaveType(
       List<LeaveType> items) {
 
-    List<DropdownMenuItem<LeaveType>> _menuItems = [];
+    List<DropdownMenuItem<LeaveType>> menuItems = [];
     for (var item in items) {
-      _menuItems.addAll(
+      menuItems.addAll(
         [
           DropdownMenuItem<LeaveType>(
             value: item,
@@ -226,28 +233,28 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         ],
       );
     }
-    return _menuItems;
+    return menuItems;
   }
 
   double _getCustomItemsHeightsForLeaveType() {
-    double _itemsHeights = 0.0;
+    double itemsHeights = 0.0;
     for (var i = 0; i <= leaveTypeList.length + 1; i++) {
       if (i.isEven) {
-        _itemsHeights = 20;
+        itemsHeights = 20;
       }
       if (i.isOdd) {
-        _itemsHeights = 0;
+        itemsHeights = 0;
       }
     }
-    return _itemsHeights;
+    return itemsHeights;
   }
 
   List<DropdownMenuItem<String>> _addDividersAfterItemsForDayType(
       List<String> items3) {
   
-    List<DropdownMenuItem<String>> _menuItems = [];
+    List<DropdownMenuItem<String>> menuItems = [];
     for (var item in items3) {
-      _menuItems.addAll(
+      menuItems.addAll(
         [
           DropdownMenuItem<String>(
             value: item,
@@ -270,22 +277,23 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         ],
       );
     }
-    return _menuItems;
+    return menuItems;
   }
 
   double _getCustomItemsHeightsForDayType() {
-    double _itemsHeights = 0.0;
+    double itemsHeights = 0.0;
     for (var i = 0; i <= dayTypeList.length + 1; i++) {
       if (i.isEven) {
-        _itemsHeights = 20;
+        itemsHeights = 20;
       }
       if (i.isOdd) {
-        _itemsHeights = 0;
+        itemsHeights = 0;
       }
     }
-    return _itemsHeights;
+    return itemsHeights;
   }
 
+  @override
   Widget build(BuildContext context) {
     _scaffoldCtx = context;
     // SizeConfig().init(context);
@@ -307,26 +315,26 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
       onWillPop: () async {
         Navigator.pushReplacement(context,
             MaterialPageRoute(builder: (context) {
-          return LeaveHistoryListScreen();
+          return const LeaveHistoryListScreen();
         }));
         return false;
       },
       child: Scaffold(
           appBar: AppBar(
-            backgroundColor: Style.ColorObj.mainColor,
+            backgroundColor: style.ColorObj.mainColor,
             title: Text(
-              'New Leave Request',
-              style: Style.appBarTitleStyle,
+              context.l10n.newLeaveRequest,
+              style: style.appBarTitleStyle,
             ),
             leading: InkWell(
                 onTap: () {
                   Navigator.pushReplacement(context,
                       MaterialPageRoute(builder: (context) {
-                    return LeaveHistoryListScreen();
+                    return const LeaveHistoryListScreen();
                   }));
                 },
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 10.0),
+                child: const Padding(
+                  padding: EdgeInsets.only(right: 10.0),
                   child: Icon(
                     Icons.arrow_back,
                     size: 28,
@@ -336,25 +344,25 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
           ),
           body: GestureDetector(
               onTap: () {
-                FocusScope.of(context).requestFocus(new FocusNode());
+                FocusScope.of(context).requestFocus(FocusNode());
               },
               child: SingleChildScrollView(
               child: Container(
                 color: Colors.white,
                 child: Padding(
-                  padding: EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(12),
                   child: Container(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Container(
+                        SizedBox(
                             width: MediaQuery.of(context).size.width,
                             height: 60,
                             child: Card(
                                 child: ElevatedButton(
                               style: ButtonStyle(
                                   backgroundColor: MaterialStateProperty.all(
-                                      Color(0xfff0efef)),
+                                      const Color(0xfff0efef)),
                                   shape: MaterialStateProperty.all(
                                       const RoundedRectangleBorder(
                                           borderRadius: BorderRadius.all(
@@ -362,7 +370,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                               child: Text(
                                 selectedDate,
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontFamily: 'Regular',
                                     color: Color(0xff006ea5),
                                     fontSize: 20),
@@ -374,7 +382,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                               },
                             ))),
                         
-                        SizedBox(
+                        const SizedBox(
                           height: 8,
                         ),
                         Container(
@@ -420,7 +428,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                                           BorderRadius.all(Radius.circular(6))),
                                   isExpanded: true,
                                   hint: Text(
-                                    'Select Leave Type',
+                                    context.l10n.selectLeaveType,
                                     style: normalMediumGreyText,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -436,7 +444,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                                   },
                                 ),
                               )),
-                          SizedBox(
+                          const SizedBox(
                             height: 18,
                           ),
                           Row(
@@ -444,7 +452,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                               // Expanded(
                               //   flex: 5,
                               //   child:
-                              Container(
+                              SizedBox(
                                 height: 40,
                                 child: Card(
                                   child: ElevatedButton(
@@ -458,12 +466,12 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                                                     Radius.circular(5))))),
                                     child: Row(
                                       children: [
-                                        Icon(
+                                        const Icon(
                                           MdiIcons.calendarRange,
-                                          color: Style.ColorObj.secondColor,
+                                          color: style.ColorObj.secondColor,
                                         ),
                                         Padding(
-                                          padding: EdgeInsets.only(left: 4),
+                                          padding: const EdgeInsets.only(left: 4),
                                           child: Text(
                                             _selectedStartDate,
                                             textAlign: TextAlign.center,
@@ -511,15 +519,15 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                                   // child:
                                   Row(
                                       children: [
-                                        Container(
+                                        SizedBox(
                                           width: 29,
                                           child: Text(
-                                            'To',
+                                            context.l10n.to,
                                             textAlign: TextAlign.center,
                                             style: normalMediumGreyText,
                                           ),
                                         ),
-                                        Container(
+                                        SizedBox(
                                           height: 40,
                                           child: Card(
                                             child: ElevatedButton(
@@ -536,13 +544,13 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                                                                           5))))),
                                               child: Row(
                                                 children: [
-                                                  Icon(
+                                                  const Icon(
                                                     MdiIcons.calendarRange,
-                                                    color: Style
+                                                    color: style
                                                         .ColorObj.secondColor,
                                                   ),
                                                   Padding(
-                                                    padding: EdgeInsets.only(
+                                                    padding: const EdgeInsets.only(
                                                         left: 4),
                                                     child: Text(
                                                       _selectedEndDate,
@@ -603,7 +611,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                                   Row(
                                       children: [
                                         Container(
-                                            margin: EdgeInsets.only(left: 5),
+                                            margin: const EdgeInsets.only(left: 5),
                                             width: 150,
                                             height: 35,
                                             padding: const EdgeInsets.symmetric(
@@ -626,7 +634,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                                                                     6))),
                                                 isExpanded: true,
                                                 hint: Text(
-                                                  'Select day Type',
+                                                  context.l10n.selectDayType,
                                                   style: normalMediumGreyText,
                                                   overflow:
                                                       TextOverflow.ellipsis,
@@ -650,7 +658,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                               //),
                             ],
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 18,
                           ),
                           Row(
@@ -673,7 +681,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                                             });
                                           }),
                                       Text(
-                                        'Half Day',
+                                        context.l10n.halfDay,
                                         style: normalMediumGreyText,
                                       )
                                     ],
@@ -684,14 +692,14 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                                   ? Expanded(
                                       flex: 4,
                                       child: Padding(
-                                        padding: EdgeInsets.only(left: 5),
+                                        padding: const EdgeInsets.only(left: 5),
                                         child: Row(
                                           children: [
                                             Expanded(
 
                                                 ///flex: 2,
                                                 child: Text(
-                                              'Duration :',
+                                              context.l10n.durationColon,
                                               style: normalMediumGreyText,
                                             )),
                                             Expanded(
@@ -708,14 +716,14 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                                   : Container()
                             ],
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 18,
                           ),
                         
                           Card(
                               color: Colors.grey[100],
                               child: Padding(
-                                padding: EdgeInsets.only(
+                                padding: const EdgeInsets.only(
                                     top: 8.0, left: 7, bottom: 8.0, right: 8.0),
                                 child: TextField(
                                   controller: _reasonController,
@@ -723,11 +731,11 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                                   maxLines: 6,
                                   style: normalMediumBalckText,
                                   decoration: InputDecoration.collapsed(
-                                      hintText: 'Reason',
+                                      hintText: context.l10n.reason,
                                       hintStyle: normalMediumGreyText),
                                 ),
                               )),
-                          SizedBox(
+                          const SizedBox(
                             height: 18,
                           ),
                           SizedBox(
@@ -744,7 +752,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                                                   Radius.circular(5))))),
                                   onPressed: _submitRequest,
                                   child: Text(
-                                    "Submit Request",
+                                    context.l10n.submitRequest,
                                     style: normalLargeWhiteText,
                                   ))),
                           GestureDetector(
@@ -752,27 +760,27 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                               _openFileExplorer();
                             },
                             child: Container(
-                              padding: EdgeInsets.only(left: 5, top: 10),
+                              padding: const EdgeInsets.only(left: 5, top: 10),
                               child: Row(
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     MdiIcons.attachment,
-                                    color: Style.ColorObj.secondColor,
+                                    color: style.ColorObj.secondColor,
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     width: 10,
                                   ),
                                   Text(
-                                    'Attachment ( For medical leave )',
-                                    style: Style.normalMediumBalckText,
+                                    context.l10n.attachmentMedicalLeave,
+                                    style: style.normalMediumBalckText,
                                   ),
                                 ],
                               ),
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsets.symmetric(vertical: 10),
-                            child: Text(path != null ? path : " "),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Text(path),
                           )
                        
                         ],
@@ -792,44 +800,45 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   _submitRequest() async {
 
     bool checkInternet = await InternetConnectionChecker().hasConnection;
+    if (!mounted) return;
     if (checkInternet == false) {
-      showDialog(context: context, builder: (_) => CustomEventDialog());
+      showDialog(context: context, builder: (_) => const CustomEventDialog());
       return;
     }
 
     if (_isHalfDay == true) {
       if (_selectedDay == '' || _selectedDay == null) {
         toast!.showToast(
-          child: Widgets().getWarningToast('Please select day type'),
+          child: Widgets().getWarningToast(context.l10n.pleaseSelectDayType),
           gravity: ToastGravity.BOTTOM,
-          toastDuration: Duration(seconds: 2),
+          toastDuration: const Duration(seconds: 2),
         );
         return;
       }
     }
     if (_selectedLeaveType == null) {
       toast!.showToast(
-        child: Widgets().getWarningToast('Please select leave type'),
+        child: Widgets().getWarningToast(context.l10n.pleaseSelectLeaveType),
         gravity: ToastGravity.BOTTOM,
-        toastDuration: Duration(seconds: 2),
+        toastDuration: const Duration(seconds: 2),
       );
       return;
     }
 
     if (_reasonController.text == '') {
       toast!.showToast(
-        child: Widgets().getWarningToast('Please enter reason'),
+        child: Widgets().getWarningToast(context.l10n.pleaseEnterReason),
         gravity: ToastGravity.BOTTOM,
-        toastDuration: Duration(seconds: 2),
+        toastDuration: const Duration(seconds: 2),
       );
       return;
     }
 
     if (noOfDay! <= 0) {
       toast!.showToast(
-        child: Widgets().getWarningToast('Please select valid date'),
+        child: Widgets().getWarningToast(context.l10n.pleaseSelectValidDate),
         gravity: ToastGravity.BOTTOM,
-        toastDuration: Duration(seconds: 2),
+        toastDuration: const Duration(seconds: 2),
       );
       return;
     }
@@ -837,7 +846,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     // if (_selectedLeaveType!.leave_type_code == 'ML') {
     //   if (base64String == '') {
     //     toast!.showToast(
-    //       child: Widgets().getWarningToast('Please upload document'),
+    //       child: Widgets().getWarningToast(context.l10n.pleaseUploadDocument),
     //       gravity: ToastGravity.BOTTOM,
     //       toastDuration: Duration(seconds: 2),
     //     );
@@ -848,7 +857,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     employee = await employeeDao.getSingleEmployeeById(userId!);
     // if (employee == null) {
     //   toast!.showToast(
-    //     child: Widgets().getErrorToast('Failed to find employee'),
+    //     child: Widgets().getErrorToast(context.l10n.failedToFindEmployee),
     //     gravity: ToastGravity.BOTTOM,
     //     toastDuration: Duration(seconds: 2),
     //   );
@@ -867,7 +876,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     if (!_isHalfDay) {
       requestDateFromPeriod = 'am';
     } else {
-      if (_selectedDay.toString() == 'Morning') {
+      if (_selectedDay.toString() == context.l10n.morning) {
         requestDateFromPeriod = 'am';
       } else {
         requestDateFromPeriod = 'pm';
@@ -909,7 +918,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         monthName,
         year);
     EasyLoading.show(
-      status: 'Submitting. Please Wait...',
+      status: context.l10n.submittingPleaseWait,
     );
 
     var createResult = await leaveApi.createLeaveRequest(leave);
@@ -919,23 +928,24 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     if (createResult['result'] == 'fail') {
       var resultMessage;
       if (createResult['message'] == '') {
-        resultMessage = 'Fail';
+        resultMessage = context.l10n.fail;
       } else {
         resultMessage = createResult['message'];
         if (resultMessage == 'Invalid cookie.') {
           EasyLoading.dismiss();
           toast!.showToast(
             child:
-                Widgets().getErrorToast('Session Expired.Please login again.'),
+                Widgets().getErrorToast(context.l10n.sessionExpired),
             gravity: ToastGravity.BOTTOM,
-            toastDuration: Duration(seconds: 3),
+            toastDuration: const Duration(seconds: 3),
           );
           await pref.setString('jwt_token', "null");
-          await Future.delayed(Duration(seconds: 4));
+          await Future.delayed(const Duration(seconds: 4));
           // timer = Timer.periodic(Duration(seconds: 3), (timer) {
+          if (!mounted) return;
           Navigator.of(_scaffoldCtx).pushAndRemoveUntil(
               MaterialPageRoute(builder: (BuildContext context) {
-            return LoginScreen();
+            return const LoginScreen();
           }), (route) => false);
 
           //});
@@ -947,7 +957,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
       toast!.showToast(
         child: Widgets().getErrorToast('$resultMessage'),
         gravity: ToastGravity.BOTTOM,
-        toastDuration: Duration(seconds: 5),
+        toastDuration: const Duration(seconds: 5),
       );
       return;
     }
@@ -955,14 +965,15 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     EasyLoading.dismiss();
 
     toast!.showToast(
-      child: Widgets().getSuccessToast('Request successfully created.'),
+      child: Widgets().getSuccessToast(context.l10n.requestCreated),
       gravity: ToastGravity.BOTTOM,
-      toastDuration: Duration(seconds: 2),
+      toastDuration: const Duration(seconds: 2),
     );
 
+    if (!mounted) return;
     await Navigator.of(context)
         .pushReplacement(MaterialPageRoute(builder: (conext) {
-      return LeaveHistoryListScreen();
+      return const LeaveHistoryListScreen();
     }));
   }
 

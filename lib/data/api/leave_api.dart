@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 import 'package:http/http.dart' as http;
 import 'package:talent_hr/data/database/dao/holiday_dao.dart';
 import 'package:talent_hr/data/database/dao/leave_reason_dao.dart';
@@ -49,6 +50,7 @@ class LeaveAPI {
             'Content-Type': 'application/json',
             'cookie': header_cookie,
             'db_name': database,
+            'Accept-Language': await LocaleController.odooLang(),
           },
           body: json.encode(param));
       if (res.statusCode == 200) {
@@ -127,6 +129,7 @@ class LeaveAPI {
               'Content-Type': 'application/json',
               'cookie': header_cookie,
               'db_name': database,
+            'Accept-Language': await LocaleController.odooLang(),
             },
             body: json.encode(param))
         .then((res) async {
@@ -184,6 +187,7 @@ class LeaveAPI {
               'Content-Type': 'application/json',
               'cookie': header_cookie,
               'db_name': database,
+            'Accept-Language': await LocaleController.odooLang(),
             },
             body: json.encode({}))
         .then((res) async {
@@ -234,6 +238,7 @@ class LeaveAPI {
               'Content-Type': 'application/json',
               'cookie': header_cookie,
               'db_name': database,
+            'Accept-Language': await LocaleController.odooLang(),
             },
             body: json.encode(param))
         .then((res) async {
@@ -290,6 +295,7 @@ class LeaveAPI {
               'Content-Type': 'application/json',
               'cookie': header_cookie,
               'db_name': database,
+            'Accept-Language': await LocaleController.odooLang(),
             },
             body: json.encode(param))
         .then((response) {

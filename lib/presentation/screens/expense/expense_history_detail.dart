@@ -4,14 +4,16 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:talent_hr/data/database/dao/employee_dao.dart';
 import 'package:talent_hr/data/models/expense/expense/expense.dart';
-import 'package:talent_hr/utility/style/theme.dart' as Style;
+import 'package:talent_hr/utility/style/theme.dart' as style;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../data/models/employee/employee.dart';
 import '../../../utility/style/theme.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
 class ExpenseHistoryDetailScreen extends StatefulWidget {
-  Expense expense;
-  ExpenseHistoryDetailScreen(this.expense);
+  final Expense expense;
+  const ExpenseHistoryDetailScreen(this.expense, {super.key});
+  @override
   _ExpenseHistoryDetailScreenState createState() =>
       _ExpenseHistoryDetailScreenState(expense);
 }
@@ -37,20 +39,32 @@ class _ExpenseHistoryDetailScreenState
 
   Color? textColor;
 
+  @override
   initState() {
     toast = FToast();
     toast!.init(context);
     super.initState();
-    _loadData();
+    
   }
 
-    void dispose() {
+  bool _inited = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_inited) {
+      _inited = true;
+      _loadData();
+    }
+  }
+
+  @override
+  void dispose() {
    
     super.dispose();
   }
 
   _loadData() async {
-    print('loadData---------${expense.toJson()}');
 
     pref = await SharedPreferences.getInstance();
     uid = await pref.getInt('uid');
@@ -62,32 +76,32 @@ class _ExpenseHistoryDetailScreenState
     }
 
     if (expense.state == 'draft') {
-      state = 'To Report';
+      state = context.l10n.toReport;
       stateColor = Colors.grey[300];
       textColor = Colors.grey[800];
     }
     if (expense.state == 'submitted') {
-      state = 'Submitted';
+      state = context.l10n.submitted;
       stateColor = Colors.orange;
       textColor = Colors.white;
     }
      if (expense.state == 'reported') {
-      state = 'To Submit';
-      stateColor = Color.fromARGB(255, 107, 103, 59);
+      state = context.l10n.toSubmit;
+      stateColor = const Color.fromARGB(255, 107, 103, 59);
       textColor = Colors.white;
     }
     if (expense.state == 'approved') {
-      state = 'Approved';
+      state = context.l10n.approved;
       stateColor = Colors.cyan;
       textColor = Colors.white;
     }
     if (expense.state == 'done') {
-      state = 'Paid';
+      state = context.l10n.paid;
       stateColor = Colors.green;
       textColor = Colors.white;
     }
     if (expense.state == 'refused') {
-      state = 'Refused';
+      state = context.l10n.refused;
       stateColor = Colors.red;
       textColor = Colors.white;
     }
@@ -95,6 +109,7 @@ class _ExpenseHistoryDetailScreenState
     setState(() {});
   }
 
+  @override
   Widget build(BuildContext context) {
     //SizeConfig().init(context);
     return WillPopScope(
@@ -104,9 +119,9 @@ class _ExpenseHistoryDetailScreenState
       },
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Style.ColorObj.mainColor,
+          backgroundColor: style.ColorObj.mainColor,
           title: Text(
-            'Expense History Detail',
+            context.l10n.paymentRequestDetail,
             style: appBarTitleStyle,
           ),
           leading: InkWell(
@@ -114,7 +129,7 @@ class _ExpenseHistoryDetailScreenState
                 await Navigator.pushReplacementNamed(context, '/expense');
               },
               child: Container(
-                  child: Icon(
+                  child: const Icon(
                 Icons.arrow_back,
                 color: Colors.white,
               ))),
@@ -130,7 +145,7 @@ class _ExpenseHistoryDetailScreenState
                   elevation: 2,
                   shadowColor: Colors.blue,
                   child: Padding(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     child: Column(
                       children: <Widget>[
                         Row(
@@ -141,10 +156,10 @@ class _ExpenseHistoryDetailScreenState
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Text(
-                                  'Expense Product',
+                                  context.l10n.paymentItem,
                                   style: normalMediumGreyText,
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 15,
                                 ),
                                 Text(
@@ -159,7 +174,7 @@ class _ExpenseHistoryDetailScreenState
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: <Widget>[
                                 Container(
-                                  padding: EdgeInsets.symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                       horizontal: 7, vertical: 1),
                                   height: 20,
                                   decoration: BoxDecoration(
@@ -179,26 +194,26 @@ class _ExpenseHistoryDetailScreenState
                             )
                           ],
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 20,
                         ),
                         Row(
                           children: <Widget>[
-                            Icon(
+                            const Icon(
                               MdiIcons.alarm,
                               size: 65,
-                              color: Style.ColorObj.mainColor,
+                              color: style.ColorObj.mainColor,
                             ),
-                            SizedBox(
+                            const SizedBox(
                               width: 14,
                             ),
                             Text(
                               expense.date!,
-                              style: Style.boldXXLBlueText,
+                              style: style.boldXXLBlueText,
                             )
                           ],
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 15,
                         ),
                         Row(
@@ -207,7 +222,7 @@ class _ExpenseHistoryDetailScreenState
                             Expanded(
                               flex: 1,
                               child: Text(
-                                'Descriiption',
+                                context.l10n.description,
                                 style: normalLargeGreyText,
                               ),
                             ),
@@ -220,7 +235,7 @@ class _ExpenseHistoryDetailScreenState
                             ),
                           ],
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 15,
                         ),
                         Row(
@@ -229,20 +244,20 @@ class _ExpenseHistoryDetailScreenState
                             Expanded(
                               flex: 1,
                               child: Text(
-                                'Amount',
+                                context.l10n.amount,
                                 style: normalLargeGreyText,
                               ),
                             ),
                             Expanded(
                               flex: 1,
                               child: Text(
-                                amount != '' ? amount + '  ' : '',
+                                amount != '' ? '$amount  ' : '',
                                 style: normalLargeBalckText,
                               ),
                             ),
                           ],
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 15,
                         ),
                         Row(
@@ -251,31 +266,7 @@ class _ExpenseHistoryDetailScreenState
                             Expanded(
                               flex: 1,
                               child: Text(
-                                'Paid By',
-                                style: normalLargeGreyText,
-                              ),
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: Text(
-                                expense.paidBy == 'own_account'
-                                    ? 'Employee ( To reimburse )'
-                                    : 'Company',
-                                style: normalLargeBalckText,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(
-                          height: 15,
-                        ),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Expanded(
-                              flex: 1,
-                              child: Text(
-                                'Note',
+                                context.l10n.note,
                                 style: normalLargeGreyText,
                               ),
                             ),
@@ -288,7 +279,7 @@ class _ExpenseHistoryDetailScreenState
                             ),
                           ],
                         ),
-                        Spacer(),
+                        const Spacer(),
                       ],
                     ),
                   ),

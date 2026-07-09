@@ -21,7 +21,6 @@ import 'package:talent_hr/data/database/dao/payslip_dao.dart';
 import 'package:talent_hr/data/database/dao/payslip_line_dao.dart';
 import 'package:talent_hr/presentation/screens/dashboard/dashboard_main.dart';
 //import 'package:progress_indicators/progress_indicators.dart';
-import 'package:talent_hr/utility/style/theme.dart' as Style;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../data/api/expense_product_api.dart';
 import '../../../data/api/expense_tax_api.dart';
@@ -34,8 +33,12 @@ import '../../widgets/custom_event_dialog.dart';
 import '../../widgets/widgets.dart';
 import 'login.dart';
 import 'reject_screen.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
 class WaitingScreen extends StatefulWidget {
+  const WaitingScreen({super.key});
+
+  @override
   _WaitingScreenState createState() => _WaitingScreenState();
 }
 
@@ -66,6 +69,7 @@ class _WaitingScreenState extends State<WaitingScreen> {
   var expenseTaxApi = ExpenseTaxAPI();
   late BuildContext _scaffoldCtx;
 
+  @override
   void initState() {
     super.initState();
     toast = FToast();
@@ -89,26 +93,58 @@ class _WaitingScreenState extends State<WaitingScreen> {
 
   downloadData() async {
     var pref = await SharedPreferences.getInstance();
-    var userId = await pref.getInt('uid');
+    var userId = pref.getInt('uid');
 
-    await employeeApi.getEmployeeList();
+    await checkDeviceActivation();
+    if (!mounted) return;
+    final waitingStage = pref.getString('waitingStage');
+    if (waitingStage == 'false') {
+      return;
+    }
+
+    var employeeSyncResult = await employeeApi.getEmployeeList();
+    if (employeeSyncResult != 'success') {
+      toast!.showToast(
+        child: Widgets().getErrorToast(employeeSyncResult.toString()),
+        gravity: ToastGravity.BOTTOM,
+        toastDuration: const Duration(seconds: 3),
+      );
+      return;
+    }
 
     checkDeviceActivation();
     setState(() {});
 
     Employee? employee = await employeeDao.getSingleEmployeeById(userId!);
+    if (employee == null) {
+      toast!.showToast(
+        child: Widgets().getErrorToast(
+            'Employee data was not found after sync. Please check the Odoo employee-user link.'),
+        gravity: ToastGravity.BOTTOM,
+        toastDuration: const Duration(seconds: 3),
+      );
+      return;
+    }
     toast!.showToast(
-      child: Widgets().getDownloadToast('Employee data downloaded'),
+      child: Widgets().getDownloadToast(context.l10n.employeeDataDownloaded),
       gravity: ToastGravity.BOTTOM,
-      toastDuration: Duration(seconds: 1),
+      toastDuration: const Duration(seconds: 1),
     );
 
-    if (employee == null) return;
-    await attendanceApi.getAttendanceList(employee.employee_id!);
+    var attendanceSyncResult =
+        await attendanceApi.getAttendanceList(employee.employee_id!);
+    if (attendanceSyncResult != 'success') {
+      toast!.showToast(
+        child: Widgets().getErrorToast(attendanceSyncResult.toString()),
+        gravity: ToastGravity.BOTTOM,
+        toastDuration: const Duration(seconds: 3),
+      );
+      return;
+    }
     toast!.showToast(
-      child: Widgets().getDownloadToast('Attendance data downloaded'),
+      child: Widgets().getDownloadToast(context.l10n.attendanceDataDownloaded),
       gravity: ToastGravity.BOTTOM,
-      toastDuration: Duration(seconds: 1),
+      toastDuration: const Duration(seconds: 1),
     );
 
   
@@ -118,9 +154,9 @@ class _WaitingScreenState extends State<WaitingScreen> {
 
     await expenseTaxApi.getExpenseTaxListOnline();
     toast!.showToast(
-      child: Widgets().getDownloadToast('Expense data downloaded'),
+      child: Widgets().getDownloadToast(context.l10n.paymentDataDownloaded),
       gravity: ToastGravity.BOTTOM,
-      toastDuration: Duration(seconds: 1),
+      toastDuration: const Duration(seconds: 1),
     );
 
     await leaveApi.getLeaveRemainingList();
@@ -128,9 +164,9 @@ class _WaitingScreenState extends State<WaitingScreen> {
     await leaveApi.getLeaveTypeList();
     // await leaveApi.getUpcomingHolidayList();
     toast!.showToast(
-      child: Widgets().getDownloadToast('Leave data downloaded'),
+      child: Widgets().getDownloadToast(context.l10n.leaveDataDownloaded),
       gravity: ToastGravity.BOTTOM,
-      toastDuration: Duration(seconds: 1),
+      toastDuration: const Duration(seconds: 1),
     );
 
    
@@ -138,16 +174,17 @@ class _WaitingScreenState extends State<WaitingScreen> {
     var paySlipApi = PaySlipAPI();
     await paySlipApi.paySlipList();
     toast!.showToast(
-      child: Widgets().getDownloadToast('Payslip data downloaded'),
+      child: Widgets().getDownloadToast(context.l10n.payslipDataDownloaded),
       gravity: ToastGravity.BOTTOM,
-      toastDuration: Duration(seconds: 1),
+      toastDuration: const Duration(seconds: 1),
     );
 
     timer = Timer.periodic(
-        Duration(seconds: 5), (timer) => checkDeviceActivation());
+        const Duration(seconds: 5), (timer) => checkDeviceActivation());
     // });
   }
 
+  @override
   void dispose() {
     timer?.cancel();
     super.dispose();
@@ -157,7 +194,7 @@ class _WaitingScreenState extends State<WaitingScreen> {
     bool checkInternet = await InternetConnectionChecker().hasConnection;
     if (checkInternet == false) {
       if (!mounted) return;
-      showDialog(context: context, builder: (_) => CustomEventDialog());
+      showDialog(context: context, builder: (_) => const CustomEventDialog());
       return;
     }
     var pref = await SharedPreferences.getInstance();
@@ -180,37 +217,38 @@ class _WaitingScreenState extends State<WaitingScreen> {
       if (!mounted) return;
       Navigator.of(context)
           .pushReplacement(MaterialPageRoute(builder: (BuildContext context) {
-        return HomeScreen();
+        return const HomeScreen();
       }));
     } else if (deviceState == 'reject') {
       if (!mounted) return;
       Navigator.of(context)
           .pushReplacement(MaterialPageRoute(builder: (BuildContext context) {
-        return RejectScreen();
+        return const RejectScreen();
       }));
     } else if (deviceState == 'Invalid cookie.') {
       toast!.showToast(
-        child: Widgets().getErrorToast('Session Expired.Please login again.'),
+        child: Widgets().getErrorToast(context.l10n.sessionExpired),
         gravity: ToastGravity.BOTTOM,
-        toastDuration: Duration(seconds: 3),
+        toastDuration: const Duration(seconds: 3),
       );
       await pref.setString('jwt_token', "null");
-      await Future.delayed(Duration(seconds: 4));
+      await Future.delayed(const Duration(seconds: 4));
       // timer = Timer.periodic(Duration(seconds: 3), (timer) {
       if (!mounted) return;
       Navigator.of(_scaffoldCtx).pushAndRemoveUntil(
           MaterialPageRoute(builder: (BuildContext context) {
-        return LoginScreen();
+        return const LoginScreen();
       }), (route) => false);
     } else {
       toast!.showToast(
         child: Widgets().getErrorToast(deviceState),
         gravity: ToastGravity.BOTTOM,
-        toastDuration: Duration(seconds: 3),
+        toastDuration: const Duration(seconds: 3),
       );
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     _scaffoldCtx = context;
     //SizeConfig().init(context);
@@ -219,19 +257,19 @@ class _WaitingScreenState extends State<WaitingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
-            'Waiting',
+          Text(
+            context.l10n.waiting,
             style: TextStyle(
               color: Colors.black,
               fontSize: 40,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(
+          SizedBox(
             height: 10,
           ),
-          const Text(
-            'Approval Or Download',
+          Text(
+            context.l10n.approvalOrDownload,
             style: TextStyle(
                 color: Colors.black, fontSize: 25, fontWeight: FontWeight.bold),
           ),

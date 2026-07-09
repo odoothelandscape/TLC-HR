@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:talent_hr/data/api/attendance_api.dart';
 import 'package:talent_hr/utility/style/theme.dart';
 
 import '../../widgets/leave_time_picker.dart';
 import 'error_dialog.dart';
+import 'package:talent_hr/app/locale_controller.dart';
 
 class TimeSelectDialog extends StatefulWidget {
   const TimeSelectDialog({Key? key}) : super(key: key);
@@ -51,8 +50,8 @@ class _TimeSelectDialogState extends State<TimeSelectDialog> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  "Choose Date",
+                Text(
+                  context.l10n.chooseDate,
                   style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
                 IconButton(
@@ -66,14 +65,14 @@ class _TimeSelectDialogState extends State<TimeSelectDialog> {
               ],
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 50,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               TimePickerWidget(
-                text: 'Start Date',
+                text: context.l10n.startDate,
                 timePicker: (t) {
                   setState(() {
                     startTime = t;
@@ -86,10 +85,10 @@ class _TimeSelectDialogState extends State<TimeSelectDialog> {
               const SizedBox(
                 width: 30,
               ),
-              const SizedBox(
+              SizedBox(
                   child: Center(
                       child: Text(
-                "TO",
+                context.l10n.to,
                 style: TextStyle(
                     fontSize: 15,
                     color: ColorObj.textColor,
@@ -100,7 +99,7 @@ class _TimeSelectDialogState extends State<TimeSelectDialog> {
               ),
               selectTime
                   ? TimePickerWidget(
-                      text: 'End Date',
+                      text: context.l10n.endDate,
                       timePicker: (t) {
                         setState(() {
                           endTime = t;
@@ -110,9 +109,9 @@ class _TimeSelectDialogState extends State<TimeSelectDialog> {
                                 context: context,
                                 builder: (context) {
                                   return ErrorDialog(
-                                      title: "End Date Select Error",
-                                      content: const Text(
-                                        "Please select correct End Date",
+                                      title: context.l10n.endDateSelectError,
+                                      content: Text(
+                                        context.l10n.pleaseSelectCorrectEndDate,
                                         style: TextStyle(
                                             color: ColorObj.textColor,
                                             fontSize: 15),
@@ -131,9 +130,9 @@ class _TimeSelectDialogState extends State<TimeSelectDialog> {
                             context: context,
                             builder: (context) {
                               return ErrorDialog(
-                                title: "Date Select Failed",
-                                content: const Text(
-                                  "Please choose Start Date First",
+                                title: context.l10n.dateSelectFailed,
+                                content: Text(
+                                  context.l10n.pleaseChooseStartDateFirst,
                                   style: TextStyle(
                                       color: ColorObj.textColor, fontSize: 15),
                                 ),
@@ -144,7 +143,7 @@ class _TimeSelectDialogState extends State<TimeSelectDialog> {
                       child: AbsorbPointer(
                         absorbing: true,
                         child: TimePickerWidget(
-                          text: 'End Time',
+                          text: context.l10n.endTime,
                           timePicker: (t) {
                             setState(() {
                               endTime = t;
@@ -174,7 +173,7 @@ class _TimeSelectDialogState extends State<TimeSelectDialog> {
                         onPressed: () {
                           Navigator.of(context);
                         },
-                        child: const Text("Cancel"))),
+                        child: Text(context.l10n.cancel))),
                 const SizedBox(
                   width: 20,
                 ),
@@ -192,7 +191,7 @@ class _TimeSelectDialogState extends State<TimeSelectDialog> {
                           await attendanceApi.getAttendanceListByFilter(
                               'custom', startTime.toString().split(' ')[0], endTime.toString().split(' ')[0]);
                         },
-                        child: const Text("Confirm"))),
+                        child: Text(context.l10n.confirm))),
               ],
             ),
           )

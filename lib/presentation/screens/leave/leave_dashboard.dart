@@ -1,16 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:talent_hr/data/api/leave_api.dart';
 import 'package:talent_hr/data/database/dao/employee_dao.dart';
 import 'package:talent_hr/data/database/dao/leave_dao.dart';
 import 'package:talent_hr/data/database/dao/leave_remain.dart';
 import 'package:talent_hr/data/database/dao/leave_type_dao.dart';
-import 'package:talent_hr/utility/style/theme.dart' as Style;
+import 'package:talent_hr/utility/style/theme.dart' as style;
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -21,10 +19,11 @@ import '../../../data/models/leave_type/leave_type.dart';
 import '../../../utility/style/theme.dart';
 import '../../widgets/custom_event_dialog.dart';
 import '../dashboard/dashboard_main.dart';
-import 'leave_history_list_screen.dart';
-import 'leave_request_screen.dart';
 
 class LeaveDashBoardScreen extends StatefulWidget {
+  const LeaveDashBoardScreen({super.key});
+
+  @override
   _LeaveDashBoardScreenState createState() => _LeaveDashBoardScreenState();
 }
 
@@ -69,6 +68,7 @@ class _LeaveDashBoardScreenState extends State<LeaveDashBoardScreen>
   var leaveDao = LeaveDao();
   ValueNotifier<bool> isDialOpen = ValueNotifier(false);
 
+  @override
   initState() {
     super.initState();
     toast = FToast();
@@ -82,10 +82,6 @@ class _LeaveDashBoardScreenState extends State<LeaveDashBoardScreen>
     loadData();
   }
 
-   void dispose() {
-   
-    super.dispose();
-  }
 
   loadData() async {
     pref = await SharedPreferences.getInstance();
@@ -118,11 +114,11 @@ class _LeaveDashBoardScreenState extends State<LeaveDashBoardScreen>
     leaveRemainList = [];
     leaveList = [];
     leaveRemainList = await leaveRemainDao.getLeaveRemainList();
-    if (leaveRemainList.length > 0) {
-      leaveRemainList.forEach((element) {
-        colorList.add(Color(0xffDCDCDC));
+    if (leaveRemainList.isNotEmpty) {
+      for (var element in leaveRemainList) {
+        colorList.add(const Color(0xffDCDCDC));
         textColorList.add(Colors.grey);
-      });
+      }
 
       colorList[0] = Colors.blue;
       textColorList[0] = Colors.white;
@@ -153,14 +149,15 @@ class _LeaveDashBoardScreenState extends State<LeaveDashBoardScreen>
     percent = usedDayCount / 100;
   }
 
-  Future<Null> refreshList() async {
+  Future<void> refreshList() async {
     // doneRefresh = true;
     // leaveTypeList = [];
     // leaveRemainList = [];
     // await loadDataFromDatabase();
     bool checkInternet = await InternetConnectionChecker().hasConnection;
+    if (!mounted) return;
     if (checkInternet == false) {
-      showDialog(context: context, builder: (_) => CustomEventDialog());
+      showDialog(context: context, builder: (_) => const CustomEventDialog());
       return;
     }
 
@@ -177,6 +174,7 @@ class _LeaveDashBoardScreenState extends State<LeaveDashBoardScreen>
     EasyLoading.dismiss();
   }
 
+  @override
   Widget build(BuildContext context) {
     //SizeConfig().init(context);
     return WillPopScope(
@@ -187,7 +185,7 @@ class _LeaveDashBoardScreenState extends State<LeaveDashBoardScreen>
           }
           Navigator.pushAndRemoveUntil(context,
               MaterialPageRoute(builder: (BuildContext context) {
-            return HomeScreen();
+            return const HomeScreen();
           }), (r) {
             return false;
           });
@@ -202,15 +200,15 @@ class _LeaveDashBoardScreenState extends State<LeaveDashBoardScreen>
                     if (!mounted) return;
                     Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (BuildContext context) {
-                      return HomeScreen();
+                      return const HomeScreen();
                     }));
                   },
-                  child: Icon(Icons.home)),
-            backgroundColor: Style.ColorObj.mainColor,
+                  child: const Icon(Icons.home)),
+            backgroundColor: style.ColorObj.mainColor,
             title: Text(
               //'leave'.tr(),
               'Leave Dashboard',
-              style: Style.appBarTitleStyle,
+              style: style.appBarTitleStyle,
             ),
             actions: [
               IgnorePointer(
@@ -222,8 +220,8 @@ class _LeaveDashBoardScreenState extends State<LeaveDashBoardScreen>
                       });
                       refreshList();
                     },
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 10.0),
+                    child: const Padding(
+                      padding: EdgeInsets.only(right: 10.0),
                       child: Icon(
                         Icons.refresh,
                         color: Colors.white,
@@ -247,7 +245,7 @@ class _LeaveDashBoardScreenState extends State<LeaveDashBoardScreen>
                   //   return _selectedDays.contains(day);
                   // },
                   startingDayOfWeek: StartingDayOfWeek.monday,
-                  headerStyle: HeaderStyle(
+                  headerStyle: const HeaderStyle(
                     formatButtonVisible: false,
                     //centerHeaderTitle: true
                   ),
@@ -324,13 +322,13 @@ class _LeaveDashBoardScreenState extends State<LeaveDashBoardScreen>
                     });
                   },
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 15,
                 ),
                 if (showLeaveDetail)
                   Container(
                     padding:
-                        EdgeInsets.only(left: 15, top: 5, bottom: 5, right: 10),
+                        const EdgeInsets.only(left: 15, top: 5, bottom: 5, right: 10),
                     width: double.infinity,
                     color: Colors.grey[300],
                     child: Text(
@@ -341,13 +339,13 @@ class _LeaveDashBoardScreenState extends State<LeaveDashBoardScreen>
                 if (showLeaveDetail)
                   Container(
                     padding:
-                        EdgeInsets.only(left: 15, top: 5, bottom: 5, right: 10),
+                        const EdgeInsets.only(left: 15, top: 5, bottom: 5, right: 10),
                     width: double.infinity,
                     child: Text(leaveDetail.name.toString(),
                         style: normalMediumBalckText),
                   ),
                
-                Container(
+                SizedBox(
                   height: 100.0,
                   child: ListView.builder(
                       shrinkWrap: true,
@@ -360,10 +358,10 @@ class _LeaveDashBoardScreenState extends State<LeaveDashBoardScreen>
                               colorList = [];
                               textColorList = [];
 
-                              leaveRemainList.forEach((element) {
-                                colorList.add(Color(0xffDCDCDC));
+                              for (var element in leaveRemainList) {
+                                colorList.add(const Color(0xffDCDCDC));
                                 textColorList.add(Colors.grey);
-                              });
+                              }
                               if (index == 0) {
                                 colorList[index] = Colors.blue;
 
@@ -423,8 +421,8 @@ class _LeaveDashBoardScreenState extends State<LeaveDashBoardScreen>
                             });
                           },
                           child: Container(
-                            margin: EdgeInsets.all(8),
-                            padding: EdgeInsets.all(8),
+                            margin: const EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10),
                               color: colorList[index],
@@ -433,7 +431,7 @@ class _LeaveDashBoardScreenState extends State<LeaveDashBoardScreen>
                                   color: Colors.grey[300]!,
                                   blurRadius: 2.0,
                                   spreadRadius: 2.0,
-                                  offset: Offset(
+                                  offset: const Offset(
                                     1.0,
                                     1.0,
                                   ),
@@ -449,7 +447,7 @@ class _LeaveDashBoardScreenState extends State<LeaveDashBoardScreen>
                                       color: textColorList[index],
                                       fontSize: 14),
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 5,
                                 ),
                                 Text(
@@ -461,7 +459,7 @@ class _LeaveDashBoardScreenState extends State<LeaveDashBoardScreen>
                                       fontWeight: FontWeight.bold,
                                       fontSize: 20),
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 5,
                                 ),
                                 Text(
@@ -487,18 +485,18 @@ class _LeaveDashBoardScreenState extends State<LeaveDashBoardScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
+                      const Text(
                         'Used',
                         style: TextStyle(color: Colors.grey, fontSize: 12),
                       ),
                       Text(
                         usedDayCount.toString(),
-                        style: TextStyle(
+                        style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 20,
                             fontWeight: FontWeight.bold),
                       ),
-                      Text(
+                      const Text(
                         'Days',
                         style: TextStyle(color: Colors.grey, fontSize: 12),
                       )
@@ -506,7 +504,7 @@ class _LeaveDashBoardScreenState extends State<LeaveDashBoardScreen>
                   ),
                   progressColor: progressColor,
                 ),
-               SizedBox(
+               const SizedBox(
                   height: 30,
                 ),
               ],
