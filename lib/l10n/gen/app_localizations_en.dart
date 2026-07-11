@@ -48,7 +48,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String approverFor(String role) {
-    return 'Approver — ${role}';
+    return 'Approver — $role';
   }
 
   @override
@@ -263,7 +263,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String fieldRequired(String label) {
-    return '${label} is required';
+    return '$label is required';
   }
 
   @override
@@ -280,7 +280,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String goodMorning(String name) {
-    return 'Good Morning, ${name}';
+    return 'Good Morning, $name';
   }
 
   @override
@@ -366,7 +366,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String linesCount(int count) {
-    return 'Lines (${count})';
+    return 'Lines ($count)';
   }
 
   @override
@@ -374,12 +374,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String loanNumber(String id) {
-    return 'Loan #${id}';
+    return 'Loan #$id';
   }
 
   @override
   String loanWithRemaining(String name, String amount) {
-    return '${name}  (remaining ${amount})';
+    return '$name  (remaining $amount)';
   }
 
   @override
@@ -513,7 +513,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String paidOf(String paid, String total) {
-    return 'Paid ${paid} of ${total}';
+    return 'Paid $paid of $total';
   }
 
   @override
@@ -650,7 +650,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String remainingAmount(String amount) {
-    return 'remaining ${amount}';
+    return 'remaining $amount';
   }
 
   @override
@@ -667,7 +667,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String requestNumber(String id) {
-    return 'Request #${id}';
+    return 'Request #$id';
   }
 
   @override
@@ -681,7 +681,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String requestTypesCount(int count) {
-    return '${count} request types';
+    return '$count request types';
   }
 
   @override
@@ -794,7 +794,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String totalWithValue(String value) {
-    return 'Total: ${value}';
+    return 'Total: $value';
   }
 
   @override
@@ -829,5 +829,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get yourWork => 'Your Work';
-
 }

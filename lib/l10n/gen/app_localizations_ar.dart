@@ -48,7 +48,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String approverFor(String role) {
-    return 'المعتمد — ${role}';
+    return 'المعتمد — $role';
   }
 
   @override
@@ -263,7 +263,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String fieldRequired(String label) {
-    return '${label} مطلوب';
+    return '$label مطلوب';
   }
 
   @override
@@ -280,7 +280,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String goodMorning(String name) {
-    return 'صباح الخير، ${name}';
+    return 'صباح الخير، $name';
   }
 
   @override
@@ -366,7 +366,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String linesCount(int count) {
-    return 'البنود (${count})';
+    return 'البنود ($count)';
   }
 
   @override
@@ -374,12 +374,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String loanNumber(String id) {
-    return 'سلفة رقم ${id}';
+    return 'سلفة رقم $id';
   }
 
   @override
   String loanWithRemaining(String name, String amount) {
-    return '${name}  (المتبقي ${amount})';
+    return '$name  (المتبقي $amount)';
   }
 
   @override
@@ -513,7 +513,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String paidOf(String paid, String total) {
-    return 'مدفوع ${paid} من ${total}';
+    return 'مدفوع $paid من $total';
   }
 
   @override
@@ -650,7 +650,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String remainingAmount(String amount) {
-    return 'المتبقي ${amount}';
+    return 'المتبقي $amount';
   }
 
   @override
@@ -667,7 +667,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String requestNumber(String id) {
-    return 'طلب رقم ${id}';
+    return 'طلب رقم $id';
   }
 
   @override
@@ -681,7 +681,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String requestTypesCount(int count) {
-    return '${count} نوع طلب';
+    return '$count نوع طلب';
   }
 
   @override
@@ -794,7 +794,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String totalWithValue(String value) {
-    return 'الإجمالي: ${value}';
+    return 'الإجمالي: $value';
   }
 
   @override
@@ -829,5 +829,4 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get yourWork => 'عملك';
-
 }
