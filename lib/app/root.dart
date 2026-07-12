@@ -21,7 +21,7 @@ class Root extends StatelessWidget {
       valueListenable: LocaleController.locale,
       builder: (context, locale, _) {
         return MaterialApp(
-          title: "TLC",
+          title: "TLC HR",
           builder: EasyLoading.init(),
           locale: locale,
           supportedLocales: LocaleController.supported,

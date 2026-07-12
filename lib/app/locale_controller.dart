@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -40,11 +42,16 @@ class LocaleController {
 
   static bool isArabic(BuildContext context) => currentCode(context) == 'ar';
 
-  /// Odoo lang code for API calls, based on the persisted choice
-  /// (usable outside the widget tree).
+  /// Odoo lang code for API calls, based on the persisted choice,
+  /// falling back to the device language (usable outside the widget tree).
   static Future<String> odooLang() async {
-    final pref = await SharedPreferences.getInstance();
-    return (pref.getString('app_locale') ?? 'en') == 'ar' ? 'ar_001' : 'en_US';
+    var code = locale.value?.languageCode;
+    if (code == null) {
+      final pref = await SharedPreferences.getInstance();
+      code = pref.getString('app_locale');
+    }
+    code ??= ui.PlatformDispatcher.instance.locale.languageCode;
+    return code == 'ar' ? 'ar_001' : 'en_US';
   }
 }
 
